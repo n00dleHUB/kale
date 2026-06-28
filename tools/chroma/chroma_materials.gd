@@ -470,25 +470,43 @@ static func _make_hexagon() -> Texture2D:
 	var w := hex_r * sqrt(3.0)
 	var h := hex_r * 1.5
 	var hs: float = 0.5 * sqrt(3.0)
+	var hex_r_hs := hex_r * hs
+	var w2 := w * 0.5
+	var h2 := h * 0.5
 	var line_w := 2.0
 
 	for y in range(sz):
 		for x in range(sz):
 			var gx := int(floor(float(x) / w))
 			var gy := int(floor(float(y) / h))
-			var cx := (gx + 0.5) * w
-			var cy := (gy + 0.5) * h
-			if gy % 2 == 1:
-				cx += w * 0.5
+			var lx := float(x) - gx * w
+			var ly := float(y) - gy * h
+			var sx := -1 if lx < w2 else 1
+			var sy := -1 if ly < h2 else 1
 
-			var rx := abs(float(x) - cx)
-			var ry := abs(float(y) - cy)
-			var qx: float = rx / (hex_r * hs)
-			var qy: float = ry / hex_r
+			var best_d := INF
+			var inside := false
+			for i in 4:
+				var nx := gx + (sx if i & 1 else 0)
+				var ny := gy + (sy if i & 2 else 0)
+				var cx := (nx + 0.5) * w
+				var cy := (ny + 0.5) * h
+				if ny % 2 == 1:
+					cx += w2
 
-			if qy < 1.0 and qx < 1.0 and qx * 0.5 + qy < 1.0:
-				var d := min(1.0 - qx, min(1.0 - qy, 1.0 - (qx * 0.5 + qy)))
-				var v := 0.15 if d * hex_r < line_w else 0.7
+				var rx := abs(float(x) - cx)
+				var ry := abs(float(y) - cy)
+				var qx: float = rx / hex_r_hs
+				var qy: float = ry / hex_r
+
+				if qy <= 1.0 and qx <= 1.0 and qx * 0.5 + qy <= 1.0:
+					inside = true
+					var d := min(1.0 - qx, min(1.0 - qy, 1.0 - (qx * 0.5 + qy)))
+					if d < best_d:
+						best_d = d
+
+			if inside:
+				var v := 0.15 if best_d * hex_r < line_w else 0.7
 				img.set_pixel(x, y, Color(v, v, v, 1.0))
 			else:
 				img.set_pixel(x, y, Color(0.7, 0.7, 0.7, 1.0))
