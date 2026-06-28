@@ -67,6 +67,6 @@ func _remove_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-	var player := root.get_node_or_null(PLAYER_NAME)
-	if player:
-		player.queue_free()
+	for child in root.get_children():
+		if child.name.begins_with(PLAYER_NAME):
+			child.free()

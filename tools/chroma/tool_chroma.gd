@@ -441,6 +441,7 @@ func _on_swatch_pressed(col: Color) -> void:
 		for n in nodes:
 			_apply_node(n, mat)
 		_save_cache()
+		EditorInterface.mark_scene_as_unsaved()
 
 
 func _on_color_changed(_c: Color) -> void:
@@ -450,6 +451,7 @@ func _on_color_changed(_c: Color) -> void:
 		for n in nodes:
 			_apply_node(n, mat)
 		_save_cache()
+		EditorInterface.mark_scene_as_unsaved()
 
 
 func _on_preset_changed(_idx: int) -> void:
@@ -605,6 +607,7 @@ func _live_update_selection() -> void:
 	var mat := _build_current_material()
 	for n in nodes:
 		_apply_node(n, mat)
+	EditorInterface.mark_scene_as_unsaved()
 
 
 func _apply_node(n: Node, mat: Material) -> void:
@@ -649,6 +652,7 @@ func _apply_selected() -> void:
 	for n in nodes:
 		_apply_node(n, mat)
 	_save_cache()
+	EditorInterface.mark_scene_as_unsaved()
 	_set_status("Applied to " + str(nodes.size()) + " nodes", Color(0, 1, 0))
 
 
@@ -660,6 +664,7 @@ func _clear_selected() -> void:
 	for n in nodes:
 		_clear_node(n)
 	_save_cache()
+	EditorInterface.mark_scene_as_unsaved()
 	_flash_status("Cleared " + str(nodes.size()) + " nodes", Color(1, 0.7, 0))
 
 
@@ -706,6 +711,7 @@ func _apply_all() -> void:
 			_apply_node(n, base_mat)
 
 	_save_cache()
+	EditorInterface.mark_scene_as_unsaved()
 	_set_status("Applied to all mesh nodes", Color(0, 1, 0))
 
 
@@ -719,6 +725,7 @@ func _clear_all() -> void:
 	for n in nodes:
 		_clear_node(n)
 	_save_cache()
+	EditorInterface.mark_scene_as_unsaved()
 	_flash_status("Cleared all nodes", Color(1, 0.7, 0))
 
 
