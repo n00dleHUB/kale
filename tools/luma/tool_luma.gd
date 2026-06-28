@@ -242,7 +242,7 @@ func build_panel() -> Control:
 
 	_fog_density_spin = SpinBox.new()
 	_fog_density_slider = HSlider.new()
-	fog_body.add_child(_make_slider_row("Density:", _fog_density_spin, _fog_density_slider, 0.0, 0.05, 0.001, 0.005))
+	fog_body.add_child(_make_slider_row("Density:", _fog_density_spin, _fog_density_slider, 0.0, 0.01, 0.001, 0.005))
 	_fog_density_slider.value_changed.connect(func(v):
 		if _setting_slider: return
 		_setting_slider = true
