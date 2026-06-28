@@ -72,7 +72,7 @@ func _add_chroma_loader(root: Node) -> void:
 		return
 
 	var loader_script = load("res://addons/Kale/tools/play/chroma_loader.gd")
-	var loader := loader_script.new()
+	var loader = loader_script.new()
 	loader.name = "_KaleChromaLoader"
 	root.add_child(loader, true)
 	loader.set_owner(root)
