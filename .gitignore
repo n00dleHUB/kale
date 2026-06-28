@@ -1,0 +1,5 @@
+# Per-machine scene cache (regenerated at runtime)
+tools/chroma/cache/
+
+# Session notes (not part of the plugin)
+AGENTS.md
