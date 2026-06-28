@@ -613,6 +613,9 @@ func _live_update_selection() -> void:
 func _apply_node(n: Node, mat: Material) -> void:
 	if n is MeshInstance3D:
 		n.material_override = mat
+		if n.mesh:
+			for i in n.mesh.get_surface_count():
+				n.set_surface_override_material(i, mat)
 		n.set_meta("chroma_applied", true)
 	elif n is MultiMeshInstance3D:
 		n.material = mat
@@ -733,6 +736,9 @@ func _clear_node(n: Node) -> void:
 	if n.has_meta("chroma_applied"):
 		if n is MeshInstance3D:
 			n.material_override = null
+			if n.mesh:
+				for i in n.mesh.get_surface_count():
+					n.set_surface_override_material(i, null)
 		elif n is MultiMeshInstance3D:
 			n.material = null
 		n.remove_meta("chroma_applied")
