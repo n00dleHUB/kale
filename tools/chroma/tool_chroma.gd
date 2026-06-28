@@ -8,10 +8,10 @@ const UV_SPACE_LOCAL := 0
 const UV_SPACE_WORLD := 1
 
 const DEFAULT_COLORS := [
-	Color8(180, 100, 60), Color8(190, 150, 60), Color8(120, 140, 60),
-	Color8(90, 140, 90), Color8(70, 130, 120), Color8(80, 120, 150),
-	Color8(120, 100, 150), Color8(160, 90, 110), Color8(180, 150, 100),
-	Color8(130, 120, 115)
+	Color8(210, 130, 50), Color8(190, 150, 60), Color8(120, 140, 60),
+	Color8(90, 140, 90), Color8(70, 130, 120), Color8(195, 85, 70),
+	Color8(80, 120, 150), Color8(120, 100, 150), Color8(180, 150, 100),
+	Color8(130, 120, 115), Color8(220, 220, 215), Color8(50, 50, 50)
 ]
 
 var _panel: VBoxContainer
