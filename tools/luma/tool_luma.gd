@@ -242,7 +242,7 @@ func build_panel() -> Control:
 
 	_fog_density_spin = SpinBox.new()
 	_fog_density_slider = HSlider.new()
-	fog_body.add_child(_make_slider_row("Density:", _fog_density_spin, _fog_density_slider, 0.0, 0.1, 0.001, 0.01))
+	fog_body.add_child(_make_slider_row("Density:", _fog_density_spin, _fog_density_slider, 0.0, 0.05, 0.001, 0.005))
 	_fog_density_slider.value_changed.connect(func(v):
 		if _setting_slider: return
 		_setting_slider = true
@@ -414,6 +414,7 @@ func _live_update() -> void:
 			we.environment.fog_enabled = _fog_enabled.button_pressed
 			we.environment.fog_density = _fog_density_spin.value
 			we.environment.fog_height = _fog_height_spin.value
+			we.environment.fog_height_density = 1.0
 			we.environment.fog_light_color = _fog_color.color
 			if we.environment.sky:
 				var mat := we.environment.sky.sky_material as PanoramaSkyMaterial
