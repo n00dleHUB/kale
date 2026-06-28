@@ -49,10 +49,12 @@ func _get_player_scene() -> PackedScene:
 	shape.height = 1.8
 	shape.radius = 0.5
 	col.shape = shape
+	col.owner = root
 	root.add_child(col)
 
 	var cam := Camera3D.new()
 	cam.name = "Camera3D"
+	cam.owner = root
 	root.add_child(cam)
 
 	root.set_script(PLAYER_SCRIPT)
