@@ -140,7 +140,7 @@ func build_panel() -> Control:
 	var sun_body := VBoxContainer.new()
 
 	_sun_enabled = CheckBox.new()
-	_sun_enabled.text = "Sun Enabled"
+	_sun_enabled.text = "Custom Sun"
 	_sun_enabled.toggled.connect(func(_t: bool): _on_changed())
 	sun_body.add_child(_sun_enabled)
 
@@ -193,7 +193,7 @@ func build_panel() -> Control:
 
 	_sun_energy_spin = SpinBox.new()
 	_sun_energy_slider = HSlider.new()
-	sun_body.add_child(_make_slider_row("Energy:", _sun_energy_spin, _sun_energy_slider, 0.0, 10.0, 0.01, 1.0))
+	sun_body.add_child(_make_slider_row("Intensity:", _sun_energy_spin, _sun_energy_slider, 0.0, 10.0, 0.01, 1.0))
 	_sun_energy_slider.value_changed.connect(func(v):
 		if _setting_slider: return
 		_setting_slider = true
