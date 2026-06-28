@@ -469,7 +469,7 @@ static func _make_hexagon() -> Texture2D:
 	var hex_r := 30.0
 	var w := hex_r * sqrt(3.0)
 	var h := hex_r * 1.5
-	var hs := 0.5 * sqrt(3.0)
+	var hs: float = 0.5 * sqrt(3.0)
 	var line_w := 2.0
 
 	for y in range(sz):
@@ -483,8 +483,8 @@ static func _make_hexagon() -> Texture2D:
 
 			var rx := abs(float(x) - cx)
 			var ry := abs(float(y) - cy)
-			var qx := rx / (hex_r * hs)
-			var qy := ry / hex_r
+			var qx: float = rx / (hex_r * hs)
+			var qy: float = ry / hex_r
 
 			if qy < 1.0 and qx < 1.0 and qx * 0.5 + qy < 1.0:
 				var d := min(1.0 - qx, min(1.0 - qy, 1.0 - (qx * 0.5 + qy)))
@@ -527,8 +527,8 @@ static func _make_triangles() -> Texture2D:
 			var lx := x - cx * cell
 
 			var on_edge := lx < line_w or ly < line_w or lx >= cell - line_w or ly >= cell - line_w
-			var on_diag1 := abs(ly - lx) < line_w
-			var on_diag2 := abs(ly - (cell - 1 - lx)) < line_w
+			var on_diag1: bool = abs(ly - lx) < line_w
+			var on_diag2: bool = abs(ly - (cell - 1 - lx)) < line_w
 
 			var tri := 0
 			if ly < lx and ly < cell - 1 - lx:
