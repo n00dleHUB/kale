@@ -11,23 +11,6 @@ const PRESETS := {
 	"Cool": { "intensity": 0.8, "rotation": 135.0, "ambient": Color(0.65, 0.75, 1.0), "ambient_strength": 0.5 },
 }
 
-const SKY_ROTATION_SHADER := """
-shader_type sky;
-
-uniform sampler2D panorama : source_color;
-uniform float rotation : hint_range(0.0, 360.0) = 0.0;
-
-void sky() {
-	vec3 dir = EYEDIR;
-	vec2 uv = vec2(
-		atan(dir.z, dir.x) / TAU + 0.5 + rotation / 360.0,
-		acos(dir.y) / PI
-	);
-	COLOR = texture(panorama, uv);
-}
-"""
-
-
 static func get_preset_names() -> PackedStringArray:
 	var names: PackedStringArray = []
 	for key in PRESETS.keys():
@@ -70,24 +53,21 @@ static func apply_environment(
 		env.resource_local_to_scene = true
 		we.environment = env
 
-	var sky_mat := ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = SKY_ROTATION_SHADER
-	sky_mat.shader = shader
-
+	var mat := PanoramaSkyMaterial.new()
 	if not hdri_filename.is_empty():
 		var path := "res://addons/Kale/textures/" + hdri_filename
 		if ResourceLoader.exists(path):
 			var tex := load(path) as Texture2D
 			if tex:
-				sky_mat.set_shader_parameter("panorama", tex)
+				mat.panorama = tex
 
-	sky_mat.set_shader_parameter("rotation", clamp(rotation, 0.0, 360.0))
+	mat.energy_multiplier = clamp(intensity, 0.0, 4.0)
 
 	var sky := Sky.new()
-	sky.sky_material = sky_mat
+	sky.sky_material = mat
 	env.sky = sky
 	env.background_mode = Environment.BG_SKY
+	env.sky_rotation = Vector3(0, deg_to_rad(rotation), 0)
 
 	env.ambient_light_color = ambient_color
 	env.ambient_light_energy = clamp(ambient_strength, 0.0, 4.0)
