@@ -19,7 +19,7 @@ func _ready() -> void:
 		return
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	yaw = rotation.y
-	camera.current = true
+	camera.make_current()
 
 
 func _input(event: InputEvent) -> void:
