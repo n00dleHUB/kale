@@ -89,6 +89,25 @@ vec2 _noise2(vec2 p) {
 	return vec2(_noise(p), _noise(p + vec2(100.0, 0.0)));
 }
 
+vec4 _sample(vec2 cell, vec2 uv) {
+	vec2 center = cell + vec2(0.5);
+	vec2 rel = uv - center;
+
+	float angle = (_random(cell) - 0.5) * 1.57;
+	float ca = cos(angle);
+	float sa = sin(angle);
+	vec2 rot = vec2(rel.x * ca - rel.y * sa, rel.x * sa + rel.y * ca);
+
+	vec2 off = vec2(
+		(_random(cell + vec2(50.0, 0.0)) - 0.5) * 0.5,
+		(_random(cell + vec2(0.0, 50.0)) - 0.5) * 0.5
+	);
+
+	float scale = 0.7 + _random(cell + vec2(100.0, 0.0)) * 0.6;
+
+	return texture(albedo_texture, center + rot * scale + off);
+}
+
 void vertex() {
 	vec3 pos = world_space ? (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz : VERTEX;
 	UV = pos.xz * vec2(tiling_x, tiling_y);
@@ -96,16 +115,15 @@ void vertex() {
 
 void fragment() {
 	vec2 cell = floor(UV);
-	vec2 rel = UV - cell - vec2(0.5);
+	vec2 f = fract(UV);
+	vec2 t = f * f * (3.0 - 2.0 * f);
 
-	float angle = (_noise(cell + vec2(0.5)) - 0.5) * 0.35;
-	float ca = cos(angle);
-	float sa = sin(angle);
-	vec2 rot = vec2(rel.x * ca - rel.y * sa, rel.x * sa + rel.y * ca);
+	vec4 c00 = _sample(cell + vec2(0.0, 0.0), UV);
+	vec4 c10 = _sample(cell + vec2(1.0, 0.0), UV);
+	vec4 c01 = _sample(cell + vec2(0.0, 1.0), UV);
+	vec4 c11 = _sample(cell + vec2(1.0, 1.0), UV);
 
-	vec2 off = (_noise2(cell + vec2(0.5)) - 0.5) * 0.15;
-
-	vec4 tex = texture(albedo_texture, cell + vec2(0.5) + rot + off);
+	vec4 tex = mix(mix(c00, c10, t.x), mix(c01, c11, t.x), t.y);
 	ALBEDO = tex.rgb * albedo_color.rgb;
 	METALLIC = 0.0;
 	SPECULAR = specular;
