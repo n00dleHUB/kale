@@ -57,12 +57,38 @@ func build_panel() -> Control:
 	_intensity_spin = SpinBox.new()
 	_intensity_slider = HSlider.new()
 	sky_body.add_child(_make_slider_row("Intensity:", _intensity_spin, _intensity_slider, 0.0, 4.0, 0.01, 1.0))
-	_intensity_spin.value_changed.connect(func(_v): _on_changed())
+	_intensity_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_intensity_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_intensity_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_intensity_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
 
 	_rotation_spin = SpinBox.new()
 	_rotation_slider = HSlider.new()
 	sky_body.add_child(_make_slider_row("Rotation:", _rotation_spin, _rotation_slider, 0.0, 360.0, 0.1, 0.0))
-	_rotation_spin.value_changed.connect(func(_v): _on_changed())
+	_rotation_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_rotation_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_rotation_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_rotation_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
 
 	_panel.add_child(_make_section("Sky", false, sky_body))
 
@@ -83,7 +109,20 @@ func build_panel() -> Control:
 	_ambient_spin = SpinBox.new()
 	_ambient_slider = HSlider.new()
 	amb_body.add_child(_make_slider_row("Strength:", _ambient_spin, _ambient_slider, 0.0, 4.0, 0.01, 0.6))
-	_ambient_spin.value_changed.connect(func(_v): _on_changed())
+	_ambient_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_ambient_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_ambient_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_ambient_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
 
 	_panel.add_child(_make_section("Ambient", false, amb_body))
 
@@ -172,12 +211,34 @@ func _on_preset_changed(idx: int) -> void:
 	_ambient_slider.value = data.get("ambient_strength", 0.6)
 	_ambient_spin.value = data.get("ambient_strength", 0.6)
 	_setting_slider = false
+	_live_update()
 
 
 func _on_changed() -> void:
 	if _setting_slider:
 		return
-	_flash_status("Values changed — Apply to update", Color(0.8, 0.8, 0.3))
+	_live_update()
+
+
+func _live_update() -> void:
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
+	var we := root.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if not we or not we.environment:
+		return
+	var env := we.environment
+	var sky := env.sky
+	if not sky:
+		return
+	var mat := sky.sky_material as PanoramaSkyMaterial
+	if not mat:
+		return
+
+	mat.energy_multiplier = _intensity_spin.value
+	env.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
+	env.ambient_light_color = _ambient_color.color
+	env.ambient_light_energy = _ambient_spin.value
 
 
 func _on_apply() -> void:
