@@ -414,7 +414,7 @@ func _live_update() -> void:
 			we.environment.fog_enabled = _fog_enabled.button_pressed
 			we.environment.fog_density = _fog_density_spin.value
 			we.environment.fog_height = _fog_height_spin.value
-			we.environment.fog_height_density = 1.0
+			we.environment.fog_height_density = 0.0
 			we.environment.fog_light_color = _fog_color.color
 			if we.environment.sky:
 				var mat := we.environment.sky.sky_material as PanoramaSkyMaterial
