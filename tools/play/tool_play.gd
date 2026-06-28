@@ -53,6 +53,8 @@ func _on_play() -> void:
 	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
 	player.third_person = _view_mode.selected == 1
 
+	EditorInterface.play_current_scene()
+
 
 func _remove_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
