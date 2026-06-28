@@ -1,9 +1,8 @@
 @tool
 extends KaleBase
 
+const PLAYER_NAME := "_PlaytestPlayer"
 const PLAYER_SCENE := preload("res://addons/Kale/tools/play/player.tscn")
-
-var _view_mode: OptionButton
 
 
 func get_tool_name() -> String:
@@ -20,50 +19,54 @@ func build_panel() -> Control:
 	play_btn.pressed.connect(_on_play)
 	panel.add_child(play_btn)
 
-	_view_mode = OptionButton.new()
-	_view_mode.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_view_mode.add_item("First Person")
-	_view_mode.add_item("Third Person")
-	_view_mode.select(0)
-	panel.add_child(_view_mode)
+	var sep := ColorRect.new()
+	sep.custom_minimum_size = Vector2(0, 4)
+	sep.color = Color(0.25, 0.25, 0.25)
+	panel.add_child(sep)
+
+	var add_btn := Button.new()
+	add_btn.text = "Add Player"
+	add_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_btn.pressed.connect(_add_player)
+	panel.add_child(add_btn)
+
+	var remove_btn := Button.new()
+	remove_btn.text = "Remove Player"
+	remove_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	remove_btn.pressed.connect(_remove_player)
+	panel.add_child(remove_btn)
 
 	return panel
 
 
 func _on_play() -> void:
+	EditorInterface.play_current_scene()
+
+
+func _add_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-
-	var scene_path := root.scene_file_path
-	if scene_path.is_empty():
-		return
+	_remove_player()
 
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
 	var cam := viewport.get_camera_3d() if viewport else null
 	if not cam:
 		return
-	print("=== KALE: editor cam pos ", cam.global_position, " rot ", cam.global_rotation)
-
-	var wrapper := Node3D.new()
-	wrapper.name = "KalePlaytest"
-
-	var user_scene = load(scene_path).instantiate()
-	wrapper.add_child(user_scene)
-	user_scene.owner = wrapper
 
 	var player := PLAYER_SCENE.instantiate()
-	player.name = "_PlaytestPlayer"
+	player.name = PLAYER_NAME
 	player.global_position = cam.global_position
 	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
-	player.third_person = _view_mode.selected == 1
-	print("=== KALE: player pos ", player.global_position, " rot ", player.global_rotation)
-	wrapper.add_child(player)
-	player.owner = wrapper
 
-	var wrapper_path := "user://_kale_wrapper.tscn"
-	var packed := PackedScene.new()
-	packed.pack(wrapper)
-	ResourceSaver.save(packed, wrapper_path)
+	root.add_child(player, true)
+	player.set_owner(root)
 
-	EditorInterface.play_custom_scene(wrapper_path)
+
+func _remove_player() -> void:
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
+	var player := root.get_node_or_null(PLAYER_NAME)
+	if player:
+		player.queue_free()

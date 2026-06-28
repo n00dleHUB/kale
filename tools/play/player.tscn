@@ -8,7 +8,6 @@ radius = 0.5
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_playerscript")
-third_person = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_player")

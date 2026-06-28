@@ -4,12 +4,10 @@ extends CharacterBody3D
 var mouse_sensitivity := 0.002
 var move_speed := 5.0
 var jump_velocity := 4.5
-var camera_distance := 3.0
 
-@export var third_person := false
+@export var invert_y := false
 var pitch := 0.0
 var yaw := 0.0
-var _tab_was_pressed := false
 
 @onready var camera := $Camera3D as Camera3D
 
@@ -26,7 +24,8 @@ func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
 		return
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-		pitch += event.relative.y * mouse_sensitivity
+		var y_mult := -1.0 if invert_y else 1.0
+		pitch += y_mult * event.relative.y * mouse_sensitivity
 		yaw -= event.relative.x * mouse_sensitivity
 		pitch = clamp(pitch, -1.5, 1.5)
 
@@ -44,10 +43,6 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
-	var tab_down := Input.is_key_pressed(KEY_TAB)
-	if tab_down and not _tab_was_pressed:
-		third_person = not third_person
-	_tab_was_pressed = tab_down
 
 	var raw := Vector3(
 		float(Input.is_key_pressed(KEY_D)) - float(Input.is_key_pressed(KEY_A)),
@@ -68,17 +63,7 @@ func _physics_process(delta: float) -> void:
 
 	var head := global_position + Vector3(0, 1.5, 0)
 	rotation.y = yaw
-
-	if third_person:
-		var offset := Vector3(
-			sin(yaw) * cos(pitch),
-			sin(pitch) + 0.5,
-			cos(yaw) * cos(pitch),
-		)
-		camera.global_position = head + offset * camera_distance
-		camera.look_at(head)
-	else:
-		camera.global_position = head
-		camera.rotation.x = pitch
-		camera.rotation.y = 0
-		camera.rotation.z = 0
+	camera.global_position = head
+	camera.rotation.x = pitch
+	camera.rotation.y = 0
+	camera.rotation.z = 0
