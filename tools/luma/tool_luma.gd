@@ -140,7 +140,7 @@ func build_panel() -> Control:
 	var sun_body := VBoxContainer.new()
 
 	_sun_enabled = CheckBox.new()
-	_sun_enabled.text = "Custom Sun"
+	_sun_enabled.text = "Enable Custom Sun"
 	_sun_enabled.toggled.connect(func(_t: bool): _on_changed())
 	sun_body.add_child(_sun_enabled)
 
