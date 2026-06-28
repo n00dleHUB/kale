@@ -50,4 +50,7 @@ static func _create_tools() -> Array[KaleBase]:
 	var ToolLuma = preload("res://addons/Kale/tools/luma/tool_luma.gd")
 	result.append(ToolLuma.new())
 
+	var ToolPlay = preload("res://addons/Kale/tools/play/tool_play.gd")
+	result.append(ToolPlay.new())
+
 	return result
