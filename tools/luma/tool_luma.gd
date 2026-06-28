@@ -15,6 +15,9 @@ var _ambient_color: ColorPickerButton
 var _ambient_spin: SpinBox
 var _ambient_slider: HSlider
 
+var _sky_enabled: CheckBox
+var _applied_hdri := ""
+
 var _sun_enabled: CheckBox
 var _sun_elevation_spin: SpinBox
 var _sun_elevation_slider: HSlider
@@ -23,8 +26,6 @@ var _sun_azimuth_slider: HSlider
 var _sun_color: ColorPickerButton
 var _sun_energy_spin: SpinBox
 var _sun_energy_slider: HSlider
-
-var _status: Label
 
 var _setting_slider := false
 
@@ -60,10 +61,19 @@ func build_panel() -> Control:
 	for f in Env.get_hdri_files():
 		_hdri_list.add_item(f)
 	_hdri_list.select(1)
+	_hdri_list.item_selected.connect(func(_idx): _on_changed())
 	_panel.add_child(_hdri_list)
 
 	# Sky section
 	var sky_body := VBoxContainer.new()
+	_sky_enabled = CheckBox.new()
+	_sky_enabled.text = "Enable Custom Sky"
+	_sky_enabled.toggled.connect(func(enabled: bool):
+		if not enabled:
+			_applied_hdri = ""
+		_on_changed()
+	)
+	sky_body.add_child(_sky_enabled)
 	_intensity_spin = SpinBox.new()
 	_intensity_slider = HSlider.new()
 	sky_body.add_child(_make_slider_row("Intensity:", _intensity_spin, _intensity_slider, 0.0, 4.0, 0.01, 1.0))
@@ -215,25 +225,6 @@ func build_panel() -> Control:
 
 	_panel.add_child(_make_section("Sun", true, sun_body))
 
-	# Buttons
-	var btn_row := HBoxContainer.new()
-	var apply_btn := Button.new()
-	apply_btn.text = "Apply"
-	apply_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	apply_btn.pressed.connect(_on_apply)
-	btn_row.add_child(apply_btn)
-
-	var clear_btn := Button.new()
-	clear_btn.text = "Clear"
-	clear_btn.pressed.connect(_on_clear)
-	btn_row.add_child(clear_btn)
-	_panel.add_child(btn_row)
-
-	# Status
-	_status = Label.new()
-	_status.text = ""
-	_panel.add_child(_status)
-
 	var neutral_idx := 0
 	for i in range(_preset.item_count):
 		if _preset.get_item_text(i) == "Neutral":
@@ -305,6 +296,7 @@ func _on_preset_changed(idx: int) -> void:
 	_ambient_color.color = data.get("ambient", Color.WHITE)
 	_ambient_slider.value = data.get("ambient_strength", 0.6)
 	_ambient_spin.value = data.get("ambient_strength", 0.6)
+	_sky_enabled.button_pressed = data.get("sky", true)
 	_sun_enabled.button_pressed = data.get("sun", true)
 	_sun_elevation_slider.value = data.get("sun_elevation", 45.0)
 	_sun_elevation_spin.value = data.get("sun_elevation", 45.0)
@@ -329,16 +321,32 @@ func _live_update() -> void:
 		return
 
 	var we := root.get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if we and we.environment:
-		var env := we.environment
-		var sky := env.sky
-		if sky:
-			var mat := sky.sky_material as PanoramaSkyMaterial
-			if mat:
-				mat.energy_multiplier = _intensity_spin.value
-		env.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
-		env.ambient_light_color = _ambient_color.color
-		env.ambient_light_energy = _ambient_spin.value
+	if _sky_enabled.button_pressed:
+		var hdri := ""
+		if _hdri_list.selected > 0:
+			hdri = _hdri_list.get_item_text(_hdri_list.selected)
+
+		if not we or not we.environment or not we.environment.sky or hdri != _applied_hdri:
+			_applied_hdri = hdri
+			Env.apply_environment(
+				hdri,
+				_intensity_spin.value,
+				_rotation_spin.value,
+				_ambient_color.color,
+				_ambient_spin.value,
+			)
+		elif we.environment:
+			we.environment.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
+			we.environment.ambient_light_color = _ambient_color.color
+			we.environment.ambient_light_energy = _ambient_spin.value
+			if we.environment.sky:
+				var mat := we.environment.sky.sky_material as PanoramaSkyMaterial
+				if mat:
+					mat.energy_multiplier = _intensity_spin.value
+	else:
+		if we:
+			_applied_hdri = ""
+			we.queue_free()
 
 	Env.update_sun(
 		_sun_enabled.button_pressed,
@@ -347,45 +355,3 @@ func _live_update() -> void:
 		_sun_color.color,
 		_sun_energy_spin.value,
 	)
-
-
-func _on_apply() -> void:
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		_flash_status("Open a scene first", Color(1, 0.5, 0))
-		return
-
-	var hdri := ""
-	if _hdri_list.selected > 0:
-		hdri = _hdri_list.get_item_text(_hdri_list.selected)
-
-	Env.apply_environment(
-		hdri,
-		_intensity_spin.value,
-		_rotation_spin.value,
-		_ambient_color.color,
-		_ambient_spin.value,
-	)
-	Env.update_sun(
-		_sun_enabled.button_pressed,
-		_sun_elevation_spin.value,
-		_sun_azimuth_spin.value,
-		_sun_color.color,
-		_sun_energy_spin.value,
-	)
-	_flash_status("Environment + Sun applied", Color(0, 1, 0))
-
-
-func _on_clear() -> void:
-	Env.clear_environment()
-	Env.clear_sun()
-	_flash_status("Environment + Sun cleared", Color(1, 0.7, 0))
-
-
-func _flash_status(msg: String, col: Color) -> void:
-	_status.text = msg
-	_status.add_theme_color_override("font_color", col)
-	get_tree().create_timer(2.5).timeout.connect(func():
-		_status.text = ""
-		_status.modulate = Color.WHITE
-	, CONNECT_ONE_SHOT)
