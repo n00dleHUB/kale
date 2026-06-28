@@ -21,9 +21,12 @@ func _ready() -> void:
 			continue
 		var d: Dictionary = data[np_str]
 
+		var color_str = d.get("color", "ffffffff")
+		var color := Color(color_str) if color_str is String else Color.WHITE
+
 		var mat = Materials.create_material(
 			d.get("preset", "Basic"),
-			d.get("color", Color.WHITE),
+			color,
 			d.get("specular", 0.5),
 			d.get("roughness", 0.5),
 			d.get("opacity", 1.0),

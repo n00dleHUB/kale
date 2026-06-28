@@ -58,7 +58,10 @@ func _save_chroma_json(root: Node) -> void:
 	_gather_chroma_nodes(root, nodes)
 	for n in nodes:
 		if n.has_meta("chroma_params"):
-			data[root.get_path_to(n)] = n.get_meta("chroma_params")
+			var params: Dictionary = n.get_meta("chroma_params").duplicate()
+			if params.has("color"):
+				params["color"] = (params["color"] as Color).to_html(true)
+			data[root.get_path_to(n)] = params
 
 	if data.is_empty():
 		return
