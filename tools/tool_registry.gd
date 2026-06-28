@@ -2,7 +2,7 @@
 extends Node
 
 
-static func build_tab_dock() -> VBoxContainer:
+static func build_tab_dock(plugin: EditorPlugin = null) -> VBoxContainer:
 	var dock := VBoxContainer.new()
 	dock.custom_minimum_size = Vector2(280, 0)
 
@@ -11,6 +11,9 @@ static func build_tab_dock() -> VBoxContainer:
 	dock.add_child(tab_bar)
 
 	var tools := _create_tools()
+	for tool in tools:
+		if plugin:
+			tool.set_plugin(plugin)
 	var panels: Array[Control] = []
 	for tool in tools:
 		var name := tool.get_tool_name()

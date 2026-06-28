@@ -1,8 +1,8 @@
 @tool
 extends KaleBase
 
-const PLAYER_NAME := "_PlaytestPlayer"
-const PLAYER_SCENE := preload("res://addons/Kale/tools/play/player.tscn")
+const AUTOLOAD_NAME := "KaleAutoload"
+const AUTOLOAD_PATH := "res://addons/Kale/tools/play/playtest_autoload.gd"
 
 var _view_mode: OptionButton
 
@@ -32,34 +32,22 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		return
-
-	_remove_player()
-
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
 	var cam := viewport.get_camera_3d() if viewport else null
 	if not cam:
 		return
 
-	var player := PLAYER_SCENE.instantiate()
-	player.name = PLAYER_NAME
+	var data := {
+		position = [cam.global_position.x, cam.global_position.y, cam.global_position.z],
+		rotation_y = cam.global_rotation.y,
+		third_person = _view_mode.selected == 1,
+	}
 
-	root.add_child(player, true)
-	player.set_owner(root)
+	var file := FileAccess.open("user://_kale_spawn.cfg", FileAccess.WRITE)
+	file.store_string(JSON.stringify(data))
+	file.close()
 
-	player.global_position = cam.global_position
-	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
-	player.third_person = _view_mode.selected == 1
+	if _plugin:
+		_plugin.add_autoload_singleton(AUTOLOAD_NAME, AUTOLOAD_PATH)
 
 	EditorInterface.play_current_scene()
-
-
-func _remove_player() -> void:
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		return
-	var player := root.get_node_or_null(PLAYER_NAME)
-	if player:
-		player.queue_free()

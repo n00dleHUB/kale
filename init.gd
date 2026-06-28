@@ -7,7 +7,7 @@ var _was_playing := false
 
 func _enter_tree():
 	const TR = preload("res://addons/Kale/tools/tool_registry.gd")
-	_dock = TR.build_tab_dock()
+	_dock = TR.build_tab_dock(self)
 	_dock.name = "Kale"
 	add_control_to_dock(DOCK_SLOT_RIGHT_UL, _dock)
 	scene_changed.connect(_on_scene_changed)
@@ -16,11 +16,13 @@ func _enter_tree():
 func _process(_delta: float) -> void:
 	var is_playing := EditorInterface.is_playing_scene()
 	if _was_playing and not is_playing:
-		_remove_playtest_player()
+		_cleanup_playtest()
 	_was_playing = is_playing
 
 
-func _remove_playtest_player() -> void:
+func _cleanup_playtest() -> void:
+	remove_autoload_singleton("KaleAutoload")
+
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
@@ -30,6 +32,7 @@ func _remove_playtest_player() -> void:
 
 
 func _exit_tree():
+	remove_autoload_singleton("KaleAutoload")
 	if scene_changed.is_connected(_on_scene_changed):
 		scene_changed.disconnect(_on_scene_changed)
 	if is_instance_valid(_dock):

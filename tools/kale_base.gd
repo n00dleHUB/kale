@@ -3,6 +3,13 @@ class_name KaleBase
 extends Node
 
 
+var _plugin: EditorPlugin
+
+
+func set_plugin(p: EditorPlugin) -> void:
+	_plugin = p
+
+
 func get_tool_name() -> String:
 	return "Tool"
 
