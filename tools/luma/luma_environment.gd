@@ -88,7 +88,7 @@ static func update_sun(enabled: bool, elevation: float, azimuth: float, color: C
 	var sun := root.get_node_or_null("Sun") as DirectionalLight3D
 	if not enabled:
 		if sun:
-			sun.visible = false
+			sun.queue_free()
 		return
 
 	if not sun:
@@ -97,7 +97,6 @@ static func update_sun(enabled: bool, elevation: float, azimuth: float, color: C
 		root.add_child(sun, true)
 		sun.set_owner(root)
 
-	sun.visible = true
 	sun.rotation_degrees = Vector3(-elevation, azimuth, 0)
 	sun.light_color = color
 	sun.light_energy = energy
@@ -110,6 +109,20 @@ static func clear_sun() -> void:
 	var sun := root.get_node_or_null("Sun") as DirectionalLight3D
 	if sun:
 		sun.queue_free()
+
+
+static func disable_editor_preview_sun() -> void:
+	var editor := EditorInterface.get_base_control()
+	if not editor:
+		return
+	var sun_icon := editor.get_theme_icon("DirectionalLight", "EditorIcons")
+	var buttons := editor.find_children("*", "BaseButton", true, false)
+	for btn in buttons:
+		var tt := btn.tooltip_text.strip_edges().to_lower()
+		if "sun" in tt and "toggle" in tt:
+			if btn.icon == sun_icon:
+				(btn as BaseButton).pressed.emit()
+			return
 
 
 static func clear_environment() -> void:

@@ -141,7 +141,11 @@ func build_panel() -> Control:
 
 	_sun_enabled = CheckBox.new()
 	_sun_enabled.text = "Enable Custom Sun"
-	_sun_enabled.toggled.connect(func(_t: bool): _on_changed())
+	_sun_enabled.toggled.connect(func(enabled: bool):
+		if not enabled:
+			Env.disable_editor_preview_sun()
+		_on_changed()
+	)
 	sun_body.add_child(_sun_enabled)
 
 	_sun_elevation_spin = SpinBox.new()
