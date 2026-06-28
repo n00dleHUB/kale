@@ -88,7 +88,7 @@ static func update_sun(enabled: bool, elevation: float, azimuth: float, color: C
 	var sun := root.get_node_or_null("Sun") as DirectionalLight3D
 	if not enabled:
 		if sun:
-			sun.queue_free()
+			sun.visible = false
 		return
 
 	if not sun:
@@ -97,6 +97,7 @@ static func update_sun(enabled: bool, elevation: float, azimuth: float, color: C
 		root.add_child(sun, true)
 		sun.set_owner(root)
 
+	sun.visible = true
 	sun.rotation_degrees = Vector3(-elevation, azimuth, 0)
 	sun.light_color = color
 	sun.light_energy = energy
