@@ -24,7 +24,7 @@ const PRESETS := {
 	"Wood": { "color": Color.WHITE, "rough": 0.7, "spec": 0.3, "opacity": 1.0, "tiling": 4.0, "texture": "res://addons/Kale/textures/wood.png" },
 }
 
-const PATTERN_NAMES := ["None", "Grid", "Rings", "Planks", "Tiles", "Lines", "Hexagon", "Triangles"]
+const PATTERN_NAMES := ["None", "Grid", "Rings", "Planks", "Tiles", "Lines", "Hexagon", "Diagonal", "Triangles"]
 
 const UV_MODE_PROJECTED := "projected"
 const UV_MODE_TRIPLANAR := "triplanar"
@@ -369,6 +369,7 @@ static func _gen_pattern(name: String) -> Texture2D:
 		"Tiles": return _make_tiles()
 		"Lines": return _make_lines()
 		"Hexagon": return _make_hexagon()
+		"Diagonal": return _make_diagonal()
 		"Triangles": return _make_triangles()
 	return null
 
@@ -468,8 +469,8 @@ static func _make_hexagon() -> Texture2D:
 	var hex_r := 30.0
 	var w := hex_r * sqrt(3.0)
 	var h := hex_r * 1.5
-	var gap := 2.0
 	var hs := 0.5 * sqrt(3.0)
+	var line_w := 2.0
 
 	for y in range(sz):
 		for x in range(sz):
@@ -482,21 +483,20 @@ static func _make_hexagon() -> Texture2D:
 
 			var rx := abs(float(x) - cx)
 			var ry := abs(float(y) - cy)
-			var r: float = hex_r - gap
-			var qx: float = rx / (r * hs)
-			var qy: float = ry / r
+			var qx := rx / (hex_r * hs)
+			var qy := ry / hex_r
 
-			if qy <= 1.0 and qx <= 1.0 and qx * 0.5 + qy <= 1.0:
-				var light := (gx + gy) % 2 == 0
-				var v := 0.9 if light else 0.7
+			if qy < 1.0 and qx < 1.0 and qx * 0.5 + qy < 1.0:
+				var d := min(1.0 - qx, min(1.0 - qy, 1.0 - (qx * 0.5 + qy)))
+				var v := 0.15 if d * hex_r < line_w else 0.7
 				img.set_pixel(x, y, Color(v, v, v, 1.0))
 			else:
-				img.set_pixel(x, y, Color(0.12, 0.12, 0.12, 1.0))
+				img.set_pixel(x, y, Color(0.7, 0.7, 0.7, 1.0))
 
 	return ImageTexture.create_from_image(img)
 
 
-static func _make_triangles() -> Texture2D:
+static func _make_diagonal() -> Texture2D:
 	var sz := 512
 	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
 	var cell := 64
@@ -510,6 +510,43 @@ static func _make_triangles() -> Texture2D:
 			var light := (cx + cy) % 2 == 0
 			var v := 0.9 if light == diag else 0.7
 			img.set_pixel(x, y, Color(v, v, v, 1.0))
+	return ImageTexture.create_from_image(img)
+
+
+static func _make_triangles() -> Texture2D:
+	var sz := 512
+	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
+	var cell := 48
+	var line_w := 2
+
+	for y in range(sz):
+		var cy := y / cell
+		var ly := y - cy * cell
+		for x in range(sz):
+			var cx := x / cell
+			var lx := x - cx * cell
+
+			var on_edge := lx < line_w or ly < line_w or lx >= cell - line_w or ly >= cell - line_w
+			var on_diag1 := abs(ly - lx) < line_w
+			var on_diag2 := abs(ly - (cell - 1 - lx)) < line_w
+
+			var tri := 0
+			if ly < lx and ly < cell - 1 - lx:
+				tri = 0
+			elif lx >= cell - 1 - lx and lx > ly:
+				tri = 1
+			elif ly >= lx and ly >= cell - 1 - lx:
+				tri = 2
+			else:
+				tri = 3
+
+			if on_edge or on_diag1 or on_diag2:
+				img.set_pixel(x, y, Color(0.15, 0.15, 0.15, 1.0))
+			else:
+				var light := (cx + cy + tri) % 2 == 0
+				var v := 0.9 if light else 0.7
+				img.set_pixel(x, y, Color(v, v, v, 1.0))
+
 	return ImageTexture.create_from_image(img)
 
 
