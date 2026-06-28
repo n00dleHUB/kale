@@ -144,6 +144,9 @@ uniform float tiling = 1.0;
 uniform float alpha = 1.0;
 uniform bool world_space = false;
 
+varying vec3 v_pos;
+varying vec3 v_normal;
+
 float _random(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
@@ -180,14 +183,20 @@ vec4 _bomb(vec2 uv) {
 	return mix(mix(c00, c10, t.x), mix(c01, c11, t.x), t.y);
 }
 
-void fragment() {
+void vertex() {
 	vec3 pos = world_space ? (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz : VERTEX;
-	vec3 w = abs(NORMAL);
+	vec3 nml = world_space ? normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz) : NORMAL;
+	v_pos = pos;
+	v_normal = nml;
+}
+
+void fragment() {
+	vec3 w = abs(v_normal);
 	w /= w.x + w.y + w.z;
 
-	vec4 tx = _bomb(pos.zy * tiling);
-	vec4 ty = _bomb(pos.xz * tiling);
-	vec4 tz = _bomb(pos.xy * tiling);
+	vec4 tx = _bomb(v_pos.zy * tiling);
+	vec4 ty = _bomb(v_pos.xz * tiling);
+	vec4 tz = _bomb(v_pos.xy * tiling);
 
 	vec4 tex = tx * w.x + ty * w.y + tz * w.z;
 	ALBEDO = tex.rgb * albedo_color.rgb;
