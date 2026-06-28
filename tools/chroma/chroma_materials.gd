@@ -132,6 +132,72 @@ void fragment() {
 }
 """
 
+const TRIPLANAR_BOMB_SHADER_CODE := """
+shader_type spatial;
+render_mode __BLEND__ __CULL__, shadows_disabled;
+
+uniform sampler2D albedo_texture : source_color;
+uniform vec4 albedo_color : source_color = vec4(1.0);
+uniform float specular = 0.5;
+uniform float roughness = 0.5;
+uniform float tiling = 1.0;
+uniform float alpha = 1.0;
+uniform bool world_space = false;
+
+float _random(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+
+vec4 _sample(vec2 cell, vec2 uv) {
+	vec2 center = cell + vec2(0.5);
+	vec2 rel = uv - center;
+
+	float angle = (_random(cell) - 0.5) * 1.57;
+	float ca = cos(angle);
+	float sa = sin(angle);
+	vec2 rot = vec2(rel.x * ca - rel.y * sa, rel.x * sa + rel.y * ca);
+
+	vec2 off = vec2(
+		(_random(cell + vec2(50.0, 0.0)) - 0.5) * 0.5,
+		(_random(cell + vec2(0.0, 50.0)) - 0.5) * 0.5
+	);
+
+	float scale = 0.7 + _random(cell + vec2(100.0, 0.0)) * 0.6;
+
+	return texture(albedo_texture, center + rot * scale + off);
+}
+
+vec4 _bomb(vec2 uv) {
+	vec2 cell = floor(uv);
+	vec2 f = fract(uv);
+	vec2 t = f * f * (3.0 - 2.0 * f);
+
+	vec4 c00 = _sample(cell + vec2(0.0, 0.0), uv);
+	vec4 c10 = _sample(cell + vec2(1.0, 0.0), uv);
+	vec4 c01 = _sample(cell + vec2(0.0, 1.0), uv);
+	vec4 c11 = _sample(cell + vec2(1.0, 1.0), uv);
+
+	return mix(mix(c00, c10, t.x), mix(c01, c11, t.x), t.y);
+}
+
+void fragment() {
+	vec3 pos = world_space ? (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz : VERTEX;
+	vec3 w = abs(NORMAL);
+	w /= w.x + w.y + w.z;
+
+	vec4 tx = _bomb(pos.zy * tiling);
+	vec4 ty = _bomb(pos.xz * tiling);
+	vec4 tz = _bomb(pos.xy * tiling);
+
+	vec4 tex = tx * w.x + ty * w.y + tz * w.z;
+	ALBEDO = tex.rgb * albedo_color.rgb;
+	METALLIC = 0.0;
+	SPECULAR = specular;
+	ROUGHNESS = roughness;
+	__ALPHA_LINE__
+}
+"""
+
 
 static func create_material(
 	preset: String,
@@ -150,6 +216,10 @@ static func create_material(
 ) -> Material:
 	if uv_mode == UV_MODE_PROJECTED:
 		return _create_projected(color, specular, roughness, opacity, double_sided, custom_texture, preset, pattern, tiling_x, tiling_y, uv_space, fix_tiling)
+
+	if uv_mode == UV_MODE_TRIPLANAR and fix_tiling:
+		var t := clamp(tiling_x, 0.01, 50.0)
+		return _create_triplanar_bomb(color, specular, roughness, opacity, double_sided, custom_texture, preset, pattern, t, uv_space)
 
 	var mat := StandardMaterial3D.new()
 	mat.metallic_specular = clamp(specular, 0.0, 1.0)
@@ -220,6 +290,41 @@ static func _create_projected(
 	mat.set_shader_parameter("alpha", clamp(opacity, 0.0, 1.0))
 	mat.set_shader_parameter("tiling_x", clamp(tiling_x * 0.1, 0.001, 50.0))
 	mat.set_shader_parameter("tiling_y", clamp(tiling_y * 0.1, 0.001, 50.0))
+	mat.set_shader_parameter("world_space", uv_space == 1)
+
+	return mat
+
+
+static func _create_triplanar_bomb(
+	color: Color,
+	specular: float,
+	roughness: float,
+	opacity: float,
+	double_sided: bool,
+	custom_texture: String,
+	preset: String,
+	pattern: String,
+	tiling: float,
+	uv_space: int
+) -> Material:
+	var cull_mode := "cull_disabled" if double_sided else "cull_back"
+	var blend_mode := "blend_mix, " if opacity < 1.0 else ""
+	var alpha_line := "\tALPHA = tex.a * albedo_color.a * alpha;\n" if opacity < 1.0 else ""
+	var code := TRIPLANAR_BOMB_SHADER_CODE.replace("__BLEND__", blend_mode).replace("__ALPHA_LINE__", alpha_line).replace("__CULL__", cull_mode)
+	var shader := Shader.new()
+	shader.code = code
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+
+	var tex := _resolve_texture(custom_texture, preset, pattern)
+	if tex:
+		mat.set_shader_parameter("albedo_texture", tex)
+
+	mat.set_shader_parameter("albedo_color", color)
+	mat.set_shader_parameter("specular", clamp(specular, 0.0, 1.0))
+	mat.set_shader_parameter("roughness", clamp(roughness, 0.0, 1.0))
+	mat.set_shader_parameter("alpha", clamp(opacity, 0.0, 1.0))
+	mat.set_shader_parameter("tiling", clamp(tiling * 0.1, 0.001, 50.0))
 	mat.set_shader_parameter("world_space", uv_space == 1)
 
 	return mat

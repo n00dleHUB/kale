@@ -491,7 +491,6 @@ func _set_uv_values(_vals: Dictionary) -> void:
 func _on_uv_mode_changed(_idx: int) -> void:
 	var mode := _uv_mode.get_item_text(_uv_mode.selected)
 	var is_triplanar := mode == "Triplanar"
-	_fix_tiling.visible = not is_triplanar
 	_tiling_x_row.visible = not is_triplanar
 	_tiling_y_row.visible = not is_triplanar
 
@@ -854,7 +853,6 @@ func load_cache() -> void:
 				break
 		_uv_mode.selected = mode_idx
 		var is_triplanar := uv_mode == "triplanar"
-		_fix_tiling.visible = not is_triplanar
 		_tiling_x_row.visible = not is_triplanar
 		_tiling_y_row.visible = not is_triplanar
 
