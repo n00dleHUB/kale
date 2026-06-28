@@ -43,6 +43,7 @@ func _on_play() -> void:
 	var cam := viewport.get_camera_3d() if viewport else null
 	if not cam:
 		return
+	print("=== KALE: editor cam pos ", cam.global_position, " rot ", cam.global_rotation)
 
 	var wrapper := Node3D.new()
 	wrapper.name = "KalePlaytest"
@@ -56,6 +57,7 @@ func _on_play() -> void:
 	player.global_position = cam.global_position
 	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
 	player.third_person = _view_mode.selected == 1
+	print("=== KALE: player pos ", player.global_position, " rot ", player.global_rotation)
 	wrapper.add_child(player)
 	player.owner = wrapper
 
