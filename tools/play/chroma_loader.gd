@@ -14,7 +14,7 @@ func _ready() -> void:
 	if not Materials:
 		return
 
-	var root := get_tree().current_scene
+	var root := get_parent()
 	for np_str in data.keys():
 		var node := root.get_node_or_null(np_str)
 		if not node:
