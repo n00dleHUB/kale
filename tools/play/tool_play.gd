@@ -40,32 +40,42 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
-	_persist_chroma_materials()
+	var root := EditorInterface.get_edited_scene_root()
+	if root:
+		_save_chroma_json(root)
+		_add_chroma_loader(root)
+
 	var err := EditorInterface.save_scene()
 	if err != OK:
 		push_warning("Kale Play: scene save failed (", err, ")")
 	EditorInterface.play_current_scene()
 
 
-func _persist_chroma_materials() -> void:
-	DirAccess.make_dir_recursive_absolute("user://_kale_mats/")
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		return
+func _save_chroma_json(root: Node) -> void:
+	var data: Dictionary = {}
 	var nodes: Array[Node] = []
 	_gather_chroma_nodes(root, nodes)
 	for n in nodes:
-		var mat := n.material_override if n is MeshInstance3D else (n.material if n is MultiMeshInstance3D else null) as Material
-		if not mat:
-			continue
-		var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
-		if ResourceSaver.save(mat, mat_path) == OK:
-			var saved := ResourceLoader.load(mat_path)
-			if saved:
-				if n is MeshInstance3D:
-					n.material_override = saved
-				elif n is MultiMeshInstance3D:
-					n.material = saved
+		if n.has_meta("chroma_params"):
+			data[root.get_path_to(n)] = n.get_meta("chroma_params")
+
+	if data.is_empty():
+		return
+
+	var file := FileAccess.open("user://_kale_chroma_data.json", FileAccess.WRITE)
+	file.store_string(JSON.stringify(data))
+	file.close()
+
+
+func _add_chroma_loader(root: Node) -> void:
+	if not FileAccess.file_exists("user://_kale_chroma_data.json"):
+		return
+
+	var loader_script = load("res://addons/Kale/tools/play/chroma_loader.gd")
+	var loader := loader_script.new()
+	loader.name = "_KaleChromaLoader"
+	root.add_child(loader, true)
+	loader.set_owner(root)
 
 
 func _gather_chroma_nodes(n: Node, out: Array[Node]) -> void:

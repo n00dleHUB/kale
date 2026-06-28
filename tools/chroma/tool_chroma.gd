@@ -612,15 +612,34 @@ func _live_update_selection() -> void:
 
 
 func _apply_node(n: Node, mat: Material) -> void:
+	var params := {
+		preset = _preset.get_item_text(_preset.selected),
+		color = _color_picker.color,
+		specular = _spec_spin.value,
+		roughness = _rough_spin.value,
+		opacity = _opacity_spin.value,
+		double_sided = _double_sided.button_pressed,
+		custom_texture = _custom_tex_path.text,
+		tiling_x = _tiling_x_spin.value,
+		tiling_y = _tiling_y_spin.value,
+		tiling_scale = _tiling_scale_spin.value,
+		uv_mode = _uv_mode.get_item_text(_uv_mode.selected).to_lower(),
+		uv_space = _uv_space.selected,
+		pattern = _pattern.get_item_text(_pattern.selected),
+		bomb = _fix_tiling.button_pressed,
+	}
+
 	if n is MeshInstance3D:
 		n.material_override = mat
 		if n.mesh:
 			for i in n.mesh.get_surface_count():
 				n.set_surface_override_material(i, mat)
 		n.set_meta("chroma_applied", true)
+		n.set_meta("chroma_params", params)
 	elif n is MultiMeshInstance3D:
 		n.material = mat
 		n.set_meta("chroma_applied", true)
+		n.set_meta("chroma_params", params)
 
 
 func _apply_to_node(n: Node) -> void:
@@ -735,6 +754,8 @@ func _clear_all() -> void:
 
 func _clear_node(n: Node) -> void:
 	if n.has_meta("chroma_applied"):
+		n.remove_meta("chroma_applied")
+		n.remove_meta("chroma_params")
 		var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
 		if FileAccess.file_exists(mat_path):
 			DirAccess.remove_absolute(mat_path)
@@ -745,7 +766,6 @@ func _clear_node(n: Node) -> void:
 					n.set_surface_override_material(i, null)
 		elif n is MultiMeshInstance3D:
 			n.material = null
-		n.remove_meta("chroma_applied")
 
 
 func _gather_groups_by_asset(n: Node, groups: Dictionary) -> void:
