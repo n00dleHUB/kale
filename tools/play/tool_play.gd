@@ -5,7 +5,6 @@ const PLAYER_NAME := "_PlaytestPlayer"
 const PLAYER_SCRIPT := preload("res://addons/Kale/tools/play/playtest_player.gd")
 
 var _view_mode: OptionButton
-var _player_scene: PackedScene
 
 
 func get_tool_name() -> String:
@@ -37,34 +36,6 @@ func _on_play() -> void:
 	EditorInterface.play_current_scene()
 
 
-func _get_player_scene() -> PackedScene:
-	if _player_scene:
-		return _player_scene
-
-	var root := CharacterBody3D.new()
-	root.name = "Player"
-
-	var col := CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.height = 1.8
-	shape.radius = 0.5
-	col.shape = shape
-	col.owner = root
-	root.add_child(col)
-
-	var cam := Camera3D.new()
-	cam.name = "Camera3D"
-	cam.owner = root
-	root.add_child(cam)
-
-	root.set_script(PLAYER_SCRIPT)
-
-	var packed := PackedScene.new()
-	packed.pack(root)
-	_player_scene = packed
-	return _player_scene
-
-
 func _spawn_player() -> void:
 	var root_node := EditorInterface.get_edited_scene_root()
 	if not root_node:
@@ -75,18 +46,29 @@ func _spawn_player() -> void:
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
 	if not viewport:
 		return
-	var cam := viewport.get_camera_3d()
-	if not cam:
+	var editor_cam := viewport.get_camera_3d()
+	if not editor_cam:
 		return
 
-	var player := _get_player_scene().instantiate()
+	var player := PLAYER_SCRIPT.new()
 	player.name = PLAYER_NAME
+
+	var col := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.height = 1.8
+	shape.radius = 0.5
+	col.shape = shape
+	player.add_child(col)
+
+	var cam_node := Camera3D.new()
+	cam_node.name = "Camera3D"
+	player.add_child(cam_node)
 
 	root_node.add_child(player, true)
 	player.set_owner(root_node)
 
-	player.global_position = cam.global_position
-	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
+	player.global_position = editor_cam.global_position
+	player.global_rotation = Vector3(0, editor_cam.global_rotation.y, 0)
 	player.third_person = _view_mode.selected == 1
 
 
