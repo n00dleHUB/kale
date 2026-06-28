@@ -18,27 +18,8 @@ func build_panel() -> Control:
 	var play_btn := Button.new()
 	play_btn.text = "Play"
 	play_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	play_btn.pressed.connect(func():
-		EditorInterface.play_current_scene()
-	)
+	play_btn.pressed.connect(_on_play)
 	panel.add_child(play_btn)
-
-	var sep := ColorRect.new()
-	sep.custom_minimum_size = Vector2(0, 4)
-	sep.color = Color(0.25, 0.25, 0.25)
-	panel.add_child(sep)
-
-	var spawn_btn := Button.new()
-	spawn_btn.text = "Spawn Player"
-	spawn_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spawn_btn.pressed.connect(_spawn_player)
-	panel.add_child(spawn_btn)
-
-	var remove_btn := Button.new()
-	remove_btn.text = "Remove Player"
-	remove_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	remove_btn.pressed.connect(_remove_player)
-	panel.add_child(remove_btn)
 
 	_view_mode = OptionButton.new()
 	_view_mode.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -48,6 +29,11 @@ func build_panel() -> Control:
 	panel.add_child(_view_mode)
 
 	return panel
+
+
+func _on_play() -> void:
+	_spawn_player()
+	EditorInterface.play_current_scene()
 
 
 func _spawn_player() -> void:

@@ -5,7 +5,7 @@ var move_speed := 5.0
 var jump_velocity := 4.5
 var camera_distance := 3.0
 
-var third_person := false
+@export var third_person := false
 var pitch := 0.0
 var yaw := 0.0
 var _tab_was_pressed := false
