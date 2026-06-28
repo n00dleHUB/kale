@@ -118,10 +118,13 @@ static func disable_editor_preview_sun() -> void:
 	var sun_icon := editor.get_theme_icon("DirectionalLight", "EditorIcons")
 	var buttons := editor.find_children("*", "BaseButton", true, false)
 	for btn in buttons:
-		var tt := btn.tooltip_text.strip_edges().to_lower()
+		var b := btn as BaseButton
+		if not b:
+			continue
+		var tt := b.tooltip_text.strip_edges().to_lower()
 		if "sun" in tt and "toggle" in tt:
-			if btn.icon == sun_icon:
-				(btn as BaseButton).pressed.emit()
+			if b.icon == sun_icon:
+				b.pressed.emit()
 			return
 
 
