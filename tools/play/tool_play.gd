@@ -3,6 +3,7 @@ extends KaleBase
 
 const PLAYER_NAME := "_PlaytestPlayer"
 const PLAYER_SCENE := preload("res://addons/Kale/tools/play/player.tscn")
+const CHROMA_LOADER_SCRIPT := preload("res://addons/Kale/tools/play/chroma_loader.gd")
 
 
 func get_tool_name() -> String:
@@ -71,8 +72,7 @@ func _add_chroma_loader(root: Node) -> void:
 	if not FileAccess.file_exists("user://_kale_chroma_data.json"):
 		return
 
-	var loader_script = load("res://addons/Kale/tools/play/chroma_loader.gd")
-	var loader = loader_script.new()
+	var loader = CHROMA_LOADER_SCRIPT.new()
 	loader.name = "_KaleChromaLoader"
 	root.add_child(loader, true)
 	loader.set_owner(root)
