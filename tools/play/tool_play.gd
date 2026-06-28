@@ -2,7 +2,7 @@
 extends KaleBase
 
 const PLAYER_NAME := "_PlaytestPlayer"
-const PLAYER_SCRIPT := preload("res://addons/Kale/tools/play/playtest_player.gd")
+const PLAYER_SCENE := preload("res://addons/Kale/tools/play/player.tscn")
 
 var _view_mode: OptionButton
 
@@ -32,14 +32,10 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
-	_spawn_player()
-	EditorInterface.play_current_scene()
-
-
-func _spawn_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
+
 	_remove_player()
 
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
@@ -47,19 +43,8 @@ func _spawn_player() -> void:
 	if not cam:
 		return
 
-	var player := PLAYER_SCRIPT.new()
+	var player := PLAYER_SCENE.instantiate()
 	player.name = PLAYER_NAME
-
-	var col := CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.height = 1.8
-	shape.radius = 0.5
-	col.shape = shape
-	player.add_child(col)
-
-	var cam_node := Camera3D.new()
-	cam_node.name = "Camera3D"
-	player.add_child(cam_node)
 
 	root.add_child(player, true)
 	player.set_owner(root)
