@@ -6,7 +6,7 @@ var _dock: Control
 
 func _enter_tree():
 	const TR = preload("res://addons/Kale/tools/tool_registry.gd")
-	_dock = TR.build_tab_dock(self)
+	_dock = TR.build_tab_dock()
 	_dock.name = "Kale"
 	add_control_to_dock(DOCK_SLOT_RIGHT_UL, _dock)
 	scene_changed.connect(_on_scene_changed)

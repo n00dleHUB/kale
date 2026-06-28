@@ -2,7 +2,7 @@
 extends Node
 
 
-static func build_tab_dock(plugin: EditorPlugin = null) -> VBoxContainer:
+static func build_tab_dock() -> VBoxContainer:
 	var dock := VBoxContainer.new()
 	dock.custom_minimum_size = Vector2(280, 0)
 
@@ -11,9 +11,6 @@ static func build_tab_dock(plugin: EditorPlugin = null) -> VBoxContainer:
 	dock.add_child(tab_bar)
 
 	var tools := _create_tools()
-	for tool in tools:
-		if plugin:
-			tool.set_plugin(plugin)
 	var panels: Array[Control] = []
 	for tool in tools:
 		var name := tool.get_tool_name()
@@ -52,8 +49,5 @@ static func _create_tools() -> Array[KaleBase]:
 
 	var ToolLuma = preload("res://addons/Kale/tools/luma/tool_luma.gd")
 	result.append(ToolLuma.new())
-
-	var ToolPlay = preload("res://addons/Kale/tools/play/tool_play.gd")
-	result.append(ToolPlay.new())
 
 	return result

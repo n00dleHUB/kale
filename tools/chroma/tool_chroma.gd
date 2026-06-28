@@ -233,7 +233,6 @@ func build_panel() -> Control:
 
 	_scan_textures()
 	_update_pattern_visibility()
-	_clean_stale_mat_files()
 
 	return _panel
 
@@ -442,7 +441,6 @@ func _on_swatch_pressed(col: Color) -> void:
 		for n in nodes:
 			_apply_node(n, mat)
 		_save_cache()
-		EditorInterface.mark_scene_as_unsaved()
 
 
 func _on_color_changed(_c: Color) -> void:
@@ -452,7 +450,6 @@ func _on_color_changed(_c: Color) -> void:
 		for n in nodes:
 			_apply_node(n, mat)
 		_save_cache()
-		EditorInterface.mark_scene_as_unsaved()
 
 
 func _on_preset_changed(_idx: int) -> void:
@@ -608,38 +605,15 @@ func _live_update_selection() -> void:
 	var mat := _build_current_material()
 	for n in nodes:
 		_apply_node(n, mat)
-	EditorInterface.mark_scene_as_unsaved()
 
 
 func _apply_node(n: Node, mat: Material) -> void:
-	var params := {
-		preset = _preset.get_item_text(_preset.selected),
-		color = _color_picker.color,
-		specular = _spec_spin.value,
-		roughness = _rough_spin.value,
-		opacity = _opacity_spin.value,
-		double_sided = _double_sided.button_pressed,
-		custom_texture = _custom_tex_path.text,
-		tiling_x = _tiling_x_spin.value,
-		tiling_y = _tiling_y_spin.value,
-		tiling_scale = _tiling_scale_spin.value,
-		uv_mode = _uv_mode.get_item_text(_uv_mode.selected).to_lower(),
-		uv_space = _uv_space.selected,
-		pattern = _pattern.get_item_text(_pattern.selected),
-		bomb = _fix_tiling.button_pressed,
-	}
-
 	if n is MeshInstance3D:
 		n.material_override = mat
-		if n.mesh:
-			for i in n.mesh.get_surface_count():
-				n.set_surface_override_material(i, mat)
 		n.set_meta("chroma_applied", true)
-		n.set_meta("chroma_params", params)
 	elif n is MultiMeshInstance3D:
 		n.material = mat
 		n.set_meta("chroma_applied", true)
-		n.set_meta("chroma_params", params)
 
 
 func _apply_to_node(n: Node) -> void:
@@ -675,7 +649,6 @@ func _apply_selected() -> void:
 	for n in nodes:
 		_apply_node(n, mat)
 	_save_cache()
-	EditorInterface.mark_scene_as_unsaved()
 	_set_status("Applied to " + str(nodes.size()) + " nodes", Color(0, 1, 0))
 
 
@@ -687,7 +660,6 @@ func _clear_selected() -> void:
 	for n in nodes:
 		_clear_node(n)
 	_save_cache()
-	EditorInterface.mark_scene_as_unsaved()
 	_flash_status("Cleared " + str(nodes.size()) + " nodes", Color(1, 0.7, 0))
 
 
@@ -734,7 +706,6 @@ func _apply_all() -> void:
 			_apply_node(n, base_mat)
 
 	_save_cache()
-	EditorInterface.mark_scene_as_unsaved()
 	_set_status("Applied to all mesh nodes", Color(0, 1, 0))
 
 
@@ -748,22 +719,14 @@ func _clear_all() -> void:
 	for n in nodes:
 		_clear_node(n)
 	_save_cache()
-	EditorInterface.mark_scene_as_unsaved()
 	_flash_status("Cleared all nodes", Color(1, 0.7, 0))
 
 
 func _clear_node(n: Node) -> void:
 	if n.has_meta("chroma_applied"):
 		n.remove_meta("chroma_applied")
-		n.remove_meta("chroma_params")
-		var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
-		if FileAccess.file_exists(mat_path):
-			DirAccess.remove_absolute(mat_path)
 		if n is MeshInstance3D:
 			n.material_override = null
-			if n.mesh:
-				for i in n.mesh.get_surface_count():
-					n.set_surface_override_material(i, null)
 		elif n is MultiMeshInstance3D:
 			n.material = null
 
@@ -934,27 +897,6 @@ func load_cache() -> void:
 
 func on_editor_scene_changed(_root: Node) -> void:
 	load_cache()
-
-
-func _clean_stale_mat_files() -> void:
-	var dir := DirAccess.open("user://_kale_mats")
-	if dir:
-		var active_ids: Array[int] = []
-		var root := EditorInterface.get_edited_scene_root()
-		if root:
-			var nodes: Array[Node3D] = []
-			_gather_mesh_nodes(root, nodes)
-			for n in nodes:
-				active_ids.append(n.get_instance_id())
-		dir.list_dir_begin()
-		var f := dir.get_next()
-		while f != "":
-			if f.ends_with(".tres"):
-				var id_str := f.trim_suffix(".tres")
-				if not id_str.is_valid_int() or not active_ids.has(id_str.to_int()):
-					dir.remove(f)
-			f = dir.get_next()
-		dir.list_dir_end()
 
 
 func _clear_cache() -> void:
