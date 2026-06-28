@@ -4,18 +4,24 @@ extends Node
 
 const PRESETS := {
 	"Bright": { "intensity": 1.5, "rotation": 0.0, "ambient": Color.WHITE, "ambient_strength": 0.8,
-		"sun": true, "sun_elevation": 60.0, "sun_azimuth": 0.0, "sun_color": Color(1, 0.95, 0.85), "sun_energy": 1.5 },
+		"sun": true, "sun_elevation": 60.0, "sun_azimuth": 0.0, "sun_color": Color(1, 0.95, 0.85), "sun_energy": 1.5,
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 	"Neutral": { "intensity": 1.0, "rotation": 90.0, "ambient": Color.WHITE, "ambient_strength": 0.6,
-		"sun": true, "sun_elevation": 45.0, "sun_azimuth": 45.0, "sun_color": Color(1, 0.96, 0.90), "sun_energy": 1.0 },
+		"sun": true, "sun_elevation": 45.0, "sun_azimuth": 45.0, "sun_color": Color(1, 0.96, 0.90), "sun_energy": 1.0,
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 	"Moody": { "intensity": 0.5, "rotation": 180.0, "ambient": Color(0.3, 0.3, 0.35), "ambient_strength": 0.3,
 		"sun": true, "sun_elevation": 20.0, "sun_azimuth": 180.0, "sun_color": Color(0.8, 0.6, 0.4), "sun_energy": 0.4,
-		"fog": true, "fog_density": 0.008, "fog_color": Color(0.3, 0.3, 0.35) },
+		"fog": true, "fog_density": 0.008, "fog_color": Color(0.3, 0.3, 0.35),
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 	"Soft": { "intensity": 0.8, "rotation": 270.0, "ambient": Color.WHITE, "ambient_strength": 0.5,
-		"sun": true, "sun_elevation": 35.0, "sun_azimuth": 135.0, "sun_color": Color(1, 0.92, 0.82), "sun_energy": 0.6 },
+		"sun": true, "sun_elevation": 35.0, "sun_azimuth": 135.0, "sun_color": Color(1, 0.92, 0.82), "sun_energy": 0.6,
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 	"Warm": { "intensity": 1.2, "rotation": 45.0, "ambient": Color(1.0, 0.88, 0.65), "ambient_strength": 0.7,
-		"sun": true, "sun_elevation": 30.0, "sun_azimuth": 270.0, "sun_color": Color(1.0, 0.7, 0.45), "sun_energy": 0.8 },
+		"sun": true, "sun_elevation": 30.0, "sun_azimuth": 270.0, "sun_color": Color(1.0, 0.7, 0.45), "sun_energy": 0.8,
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 	"Cool": { "intensity": 0.8, "rotation": 135.0, "ambient": Color(0.65, 0.75, 1.0), "ambient_strength": 0.5,
-		"sun": true, "sun_elevation": 50.0, "sun_azimuth": 90.0, "sun_color": Color(0.7, 0.8, 1.0), "sun_energy": 0.7 },
+		"sun": true, "sun_elevation": 50.0, "sun_azimuth": 90.0, "sun_color": Color(0.7, 0.8, 1.0), "sun_energy": 0.7,
+		"sdfgi": false, "ssao": false, "ssil": false, "ssr": false },
 }
 
 static func get_preset_names() -> PackedStringArray:
@@ -110,6 +116,15 @@ static func clear_sun() -> void:
 	var sun := root.get_node_or_null("Sun") as DirectionalLight3D
 	if sun:
 		sun.queue_free()
+
+
+static func update_gi_ao(env: Environment, sdfgi: bool, ssao: bool, ssil: bool, ssr: bool) -> void:
+	if not env:
+		return
+	env.sdfgi_enabled = sdfgi
+	env.ssao_enabled = ssao
+	env.ssil_enabled = ssil
+	env.ssr_enabled = ssr
 
 
 static func disable_editor_preview_sun() -> void:

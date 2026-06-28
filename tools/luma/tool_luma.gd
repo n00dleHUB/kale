@@ -32,6 +32,11 @@ var _fog_density_spin: SpinBox
 var _fog_density_slider: HSlider
 var _fog_color: ColorPickerButton
 
+var _sdfgi: CheckBox
+var _ssao: CheckBox
+var _ssil: CheckBox
+var _ssr: CheckBox
+
 var _setting_slider := false
 
 
@@ -269,6 +274,26 @@ func build_panel() -> Control:
 
 	_panel.add_child(_make_section("Fog", true, fog_body))
 
+	# GI & AO section
+	var gia_body := VBoxContainer.new()
+	_sdfgi = CheckBox.new()
+	_sdfgi.text = "SDFGI  —  Global illumination"
+	_sdfgi.toggled.connect(func(_t: bool): _on_changed())
+	gia_body.add_child(_sdfgi)
+	_ssao = CheckBox.new()
+	_ssao.text = "SSAO  —  Contact shadows"
+	_ssao.toggled.connect(func(_t: bool): _on_changed())
+	gia_body.add_child(_ssao)
+	_ssil = CheckBox.new()
+	_ssil.text = "SSIL  —  Indirect bounce"
+	_ssil.toggled.connect(func(_t: bool): _on_changed())
+	gia_body.add_child(_ssil)
+	_ssr = CheckBox.new()
+	_ssr.text = "SSR  —  Reflections"
+	_ssr.toggled.connect(func(_t: bool): _on_changed())
+	gia_body.add_child(_ssr)
+	_panel.add_child(_make_section("GI & AO", true, gia_body))
+
 	var neutral_idx := 0
 	for i in range(_preset.item_count):
 		if _preset.get_item_text(i) == "Neutral":
@@ -353,6 +378,10 @@ func _on_preset_changed(idx: int) -> void:
 	_sun_color.color = data.get("sun_color", Color(1, 0.96, 0.9))
 	_sun_energy_slider.value = data.get("sun_energy", 1.0)
 	_sun_energy_spin.value = data.get("sun_energy", 1.0)
+	_sdfgi.button_pressed = data.get("sdfgi", false)
+	_ssao.button_pressed = data.get("ssao", false)
+	_ssil.button_pressed = data.get("ssil", false)
+	_ssr.button_pressed = data.get("ssr", false)
 	_setting_slider = false
 	_live_update()
 
@@ -369,7 +398,10 @@ func _live_update() -> void:
 		return
 
 	var we := root.get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if _sky_enabled.button_pressed:
+	var sky_on := _sky_enabled.button_pressed
+	var any_gia := _sdfgi.button_pressed or _ssao.button_pressed or _ssil.button_pressed or _ssr.button_pressed
+
+	if sky_on:
 		var hdri := ""
 		if _hdri_list.selected > 0:
 			hdri = _hdri_list.get_item_text(_hdri_list.selected)
@@ -397,9 +429,21 @@ func _live_update() -> void:
 				if mat:
 					mat.energy_multiplier = _intensity_spin.value
 	else:
-		if we:
+		if any_gia:
+			if not we:
+				we = WorldEnvironment.new()
+				we.name = "WorldEnvironment"
+				root.add_child(we, true)
+				we.set_owner(root)
+				var env := Environment.new()
+				env.resource_local_to_scene = true
+				we.environment = env
+		elif we:
 			_applied_hdri = ""
 			we.queue_free()
+
+	if we and we.environment:
+		Env.update_gi_ao(we.environment, _sdfgi.button_pressed, _ssao.button_pressed, _ssil.button_pressed, _ssr.button_pressed)
 
 	Env.update_sun(
 		_sun_enabled.button_pressed,
