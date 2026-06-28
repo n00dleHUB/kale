@@ -21,8 +21,6 @@ func _process(_delta: float) -> void:
 
 
 func _cleanup_playtest() -> void:
-	remove_autoload_singleton("KaleAutoload")
-
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
@@ -32,7 +30,6 @@ func _cleanup_playtest() -> void:
 
 
 func _exit_tree():
-	remove_autoload_singleton("KaleAutoload")
 	if scene_changed.is_connected(_on_scene_changed):
 		scene_changed.disconnect(_on_scene_changed)
 	if is_instance_valid(_dock):
