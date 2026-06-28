@@ -27,6 +27,13 @@ var _sun_color: ColorPickerButton
 var _sun_energy_spin: SpinBox
 var _sun_energy_slider: HSlider
 
+var _fog_enabled: CheckBox
+var _fog_density_spin: SpinBox
+var _fog_density_slider: HSlider
+var _fog_height_spin: SpinBox
+var _fog_height_slider: HSlider
+var _fog_color: ColorPickerButton
+
 var _setting_slider := false
 
 
@@ -225,6 +232,63 @@ func build_panel() -> Control:
 
 	_panel.add_child(_make_section("Sun", true, sun_body))
 
+	# Fog section
+	var fog_body := VBoxContainer.new()
+
+	_fog_enabled = CheckBox.new()
+	_fog_enabled.text = "Enable Fog"
+	_fog_enabled.toggled.connect(func(_t: bool): _on_changed())
+	fog_body.add_child(_fog_enabled)
+
+	_fog_density_spin = SpinBox.new()
+	_fog_density_slider = HSlider.new()
+	fog_body.add_child(_make_slider_row("Density:", _fog_density_spin, _fog_density_slider, 0.0, 0.1, 0.001, 0.01))
+	_fog_density_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_fog_density_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_fog_density_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_fog_density_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+
+	_fog_height_spin = SpinBox.new()
+	_fog_height_slider = HSlider.new()
+	fog_body.add_child(_make_slider_row("Height:", _fog_height_spin, _fog_height_slider, 0.0, 100.0, 0.1, 10.0))
+	_fog_height_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_fog_height_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_fog_height_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_fog_height_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+
+	var fog_color_row := HBoxContainer.new()
+	var fog_color_lbl := Label.new()
+	fog_color_lbl.text = "Color:"
+	fog_color_row.add_child(fog_color_lbl)
+	_fog_color = ColorPickerButton.new()
+	_fog_color.color = Color(0.8, 0.85, 0.9)
+	_fog_color.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_fog_color.color_changed.connect(func(_c): _on_changed())
+	fog_color_row.add_child(_fog_color)
+	fog_body.add_child(fog_color_row)
+
+	_panel.add_child(_make_section("Fog", true, fog_body))
+
 	var neutral_idx := 0
 	for i in range(_preset.item_count):
 		if _preset.get_item_text(i) == "Neutral":
@@ -298,6 +362,12 @@ func _on_preset_changed(idx: int) -> void:
 	_ambient_spin.value = data.get("ambient_strength", 0.6)
 	_sky_enabled.button_pressed = data.get("sky", true)
 	_sun_enabled.button_pressed = data.get("sun", true)
+	_fog_enabled.button_pressed = data.get("fog", false)
+	_fog_density_slider.value = data.get("fog_density", 0.005)
+	_fog_density_spin.value = data.get("fog_density", 0.005)
+	_fog_height_slider.value = data.get("fog_height", 10.0)
+	_fog_height_spin.value = data.get("fog_height", 10.0)
+	_fog_color.color = data.get("fog_color", Color(0.8, 0.85, 0.9))
 	_sun_elevation_slider.value = data.get("sun_elevation", 45.0)
 	_sun_elevation_spin.value = data.get("sun_elevation", 45.0)
 	_sun_azimuth_slider.value = data.get("sun_azimuth", 0.0)
@@ -335,10 +405,16 @@ func _live_update() -> void:
 				_ambient_color.color,
 				_ambient_spin.value,
 			)
-		elif we.environment:
+			we = root.get_node_or_null("WorldEnvironment") as WorldEnvironment
+
+		if we and we.environment:
 			we.environment.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
 			we.environment.ambient_light_color = _ambient_color.color
 			we.environment.ambient_light_energy = _ambient_spin.value
+			we.environment.fog_enabled = _fog_enabled.button_pressed
+			we.environment.fog_density = _fog_density_spin.value
+			we.environment.fog_height = _fog_height_spin.value
+			we.environment.fog_light_color = _fog_color.color
 			if we.environment.sky:
 				var mat := we.environment.sky.sky_material as PanoramaSkyMaterial
 				if mat:
