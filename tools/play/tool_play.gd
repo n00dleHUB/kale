@@ -40,6 +40,9 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
+	var err := EditorInterface.save_scene()
+	if err != OK:
+		push_warning("Kale Play: scene save failed (", err, ")")
 	EditorInterface.play_current_scene()
 
 
