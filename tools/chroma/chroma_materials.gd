@@ -57,7 +57,7 @@ void fragment() {
 }
 """
 
-const PROJECTED_BOMB_SHADER_CODE := """
+const PROJECTED_NOISE_SHADER_CODE := """
 shader_type spatial;
 render_mode __BLEND__ __CULL__, shadows_disabled;
 
@@ -70,12 +70,23 @@ uniform float tiling_y = 1.0;
 uniform float alpha = 1.0;
 uniform bool world_space = false;
 
-float _hash(vec2 p) {
+float _random(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
 
-vec2 _hash2(vec2 p) {
-	return vec2(_hash(p + vec2(0.0, 0.0)), _hash(p + vec2(100.0, 0.0)));
+float _noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = _random(i);
+	float b = _random(i + vec2(1.0, 0.0));
+	float c = _random(i + vec2(0.0, 1.0));
+	float d = _random(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+vec2 _noise2(vec2 p) {
+	return vec2(_noise(p), _noise(p + vec2(100.0, 0.0)));
 }
 
 void vertex() {
@@ -84,15 +95,10 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 cell = floor(UV);
-	vec2 rel = UV - cell - vec2(0.5);
-	float cell_scale = 0.7 + _hash(cell + vec2(99.0)) * 0.6;
-	float angle = (_hash(cell + vec2(50.0)) - 0.5) * 0.26;
-	float ca = cos(angle);
-	float sa = sin(angle);
-	vec2 rot = vec2(rel.x * ca - rel.y * sa, rel.x * sa + rel.y * ca);
-	vec2 offset = (_hash2(cell) - 0.5) * 0.4;
-	vec4 tex = texture(albedo_texture, cell + vec2(0.5) + rot * cell_scale + offset);
+	vec2 warp = (_noise2(UV * 0.3) - 0.5) * 0.15;
+	warp += (_noise2(UV * 1.0) - 0.5) * 0.08;
+	warp += (_noise2(UV * 3.0) - 0.5) * 0.03;
+	vec4 tex = texture(albedo_texture, UV + warp);
 	ALBEDO = tex.rgb * albedo_color.rgb;
 	METALLIC = 0.0;
 	SPECULAR = specular;
@@ -172,7 +178,7 @@ static func _create_projected(
 	var cull_mode := "cull_disabled" if double_sided else "cull_back"
 	var blend_mode := "blend_mix, " if opacity < 1.0 else ""
 	var alpha_line := "\tALPHA = tex.a * albedo_color.a * alpha;\n" if opacity < 1.0 else ""
-	var src := PROJECTED_BOMB_SHADER_CODE if fix_tiling else PROJECTED_SHADER_CODE
+	var src := PROJECTED_NOISE_SHADER_CODE if fix_tiling else PROJECTED_SHADER_CODE
 	var code := src.replace("__BLEND__", blend_mode).replace("__ALPHA_LINE__", alpha_line).replace("__CULL__", cull_mode)
 	var shader := Shader.new()
 	shader.code = code
