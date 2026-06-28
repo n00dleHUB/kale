@@ -25,8 +25,8 @@ func _remove_playtest_player() -> void:
 	if not root:
 		return
 	var node := root.get_node_or_null("_PlaytestPlayer")
-		if node:
-			node.queue_free()
+	if node:
+		node.queue_free()
 
 
 func _exit_tree():
