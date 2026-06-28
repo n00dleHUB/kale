@@ -95,10 +95,17 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 warp = (_noise2(UV * 0.3) - 0.5) * 0.15;
-	warp += (_noise2(UV * 1.0) - 0.5) * 0.08;
-	warp += (_noise2(UV * 3.0) - 0.5) * 0.03;
-	vec4 tex = texture(albedo_texture, UV + warp);
+	vec2 cell = floor(UV);
+	vec2 rel = UV - cell - vec2(0.5);
+
+	float angle = (_noise(cell + vec2(0.5)) - 0.5) * 0.35;
+	float ca = cos(angle);
+	float sa = sin(angle);
+	vec2 rot = vec2(rel.x * ca - rel.y * sa, rel.x * sa + rel.y * ca);
+
+	vec2 off = (_noise2(cell + vec2(0.5)) - 0.5) * 0.15;
+
+	vec4 tex = texture(albedo_texture, cell + vec2(0.5) + rot + off);
 	ALBEDO = tex.rgb * albedo_color.rgb;
 	METALLIC = 0.0;
 	SPECULAR = specular;
