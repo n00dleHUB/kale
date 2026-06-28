@@ -38,16 +38,16 @@ static func build_tab_dock() -> VBoxContainer:
 static func _create_tools() -> Array[KaleBase]:
 	var result: Array[KaleBase] = []
 
-	var ToolImport = preload("res://addons/Kale/tools/import/tool_import.gd")
-	result.append(ToolImport.new())
-
-	var ToolCopy = preload("res://addons/Kale/tools/copy_transforms/tool_copy.gd")
-	result.append(ToolCopy.new())
-
 	var ToolChroma = preload("res://addons/Kale/tools/chroma/tool_chroma.gd")
 	result.append(ToolChroma.new())
 
 	var ToolLuma = preload("res://addons/Kale/tools/luma/tool_luma.gd")
 	result.append(ToolLuma.new())
+
+	var ToolImport = preload("res://addons/Kale/tools/import/tool_import.gd")
+	result.append(ToolImport.new())
+
+	var ToolCopy = preload("res://addons/Kale/tools/copy_transforms/tool_copy.gd")
+	result.append(ToolCopy.new())
 
 	return result
