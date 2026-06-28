@@ -21,7 +21,7 @@ func _ready() -> void:
 			continue
 		var d: Dictionary = data[np_str]
 
-		var mat := Materials.create_material(
+		var mat = Materials.create_material(
 			d.get("preset", "Basic"),
 			d.get("color", Color.WHITE),
 			d.get("specular", 0.5),
