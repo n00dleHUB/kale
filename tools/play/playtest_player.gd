@@ -5,7 +5,6 @@ var mouse_sensitivity := 0.002
 var move_speed := 5.0
 var jump_velocity := 4.5
 
-@export var invert_y := false
 var pitch := 0.0
 var yaw := 0.0
 
@@ -24,8 +23,7 @@ func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
 		return
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-		var y_mult := -1.0 if invert_y else 1.0
-		pitch += y_mult * event.relative.y * mouse_sensitivity
+		pitch -= event.relative.y * mouse_sensitivity
 		yaw -= event.relative.x * mouse_sensitivity
 		pitch = clamp(pitch, -1.5, 1.5)
 

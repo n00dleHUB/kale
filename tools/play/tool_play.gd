@@ -56,11 +56,11 @@ func _add_player() -> void:
 
 	var player := PLAYER_SCENE.instantiate()
 	player.name = PLAYER_NAME
-	player.global_position = cam.global_position
-	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
 
 	root.add_child(player, true)
 	player.set_owner(root)
+	player.global_position = cam.global_position + (-cam.global_transform.basis.z * 3.0)
+	player.global_rotation = Vector3(0, cam.global_rotation.y, 0)
 
 
 func _remove_player() -> void:
