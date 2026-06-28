@@ -41,9 +41,9 @@ func _physics_process(delta: float) -> void:
 	_tab_was_pressed = tab_down
 
 	var raw := Vector3(
-		Input.get_axis(KEY_A, KEY_D),
+		float(Input.is_key_pressed(KEY_D)) - float(Input.is_key_pressed(KEY_A)),
 		0,
-		Input.get_axis(KEY_W, KEY_S),
+		float(Input.is_key_pressed(KEY_S)) - float(Input.is_key_pressed(KEY_W)),
 	)
 	var wish_dir := raw.rotated(Vector3.UP, yaw).normalized()
 
