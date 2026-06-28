@@ -40,8 +40,7 @@ func _on_play() -> void:
 	if not cam:
 		return
 
-	var SpawnerScript := load("res://addons/Kale/tools/play/player_spawner.gd")
-	var spawner := SpawnerScript.new()
+	var spawner = load("res://addons/Kale/tools/play/player_spawner.gd").new()
 	spawner.name = "_PlayerSpawner"
 	spawner.spawn_position = cam.global_position
 	spawner.spawn_rotation_y = cam.global_rotation.y
