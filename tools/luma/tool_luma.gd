@@ -209,7 +209,7 @@ func _flash_status(msg: String, col: Color) -> void:
 	_status.text = msg
 	_status.add_theme_color_override("font_color", col)
 
-	var tween := create_tween().set_delay(2.5)
+	var tween: Tween = create_tween().set_delay(2.5)
 	tween.tween_property(_status, "modulate", Color.TRANSPARENT, 0.5)
 	tween.finished.connect(func():
 		_status.text = ""
