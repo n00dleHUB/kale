@@ -121,7 +121,6 @@ static func clear_sun() -> void:
 static func update_gi_ao(env: Environment, sdfgi: bool, ssao: bool, ssil: bool, ssr: bool) -> void:
 	if not env:
 		return
-	print("=== KALE GI/AO: sdfgi=", sdfgi, " ssao=", ssao, " ssil=", ssil, " ssr=", ssr, " env=", env)
 	env.sdfgi_enabled = sdfgi
 	env.ssao_enabled = ssao
 	env.ssil_enabled = ssil
