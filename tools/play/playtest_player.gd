@@ -17,9 +17,15 @@ var _tab_was_pressed := false
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
+	print("=== KALE PLAYER _ready() ===")
+	print("Position: ", global_position)
+	print("Camera valid: ", camera != null)
+	if camera:
+		print("Camera current: ", camera.current)
+		camera.make_current()
+		print("Camera current after make_current: ", camera.current)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	yaw = rotation.y
-	camera.make_current()
 
 
 func _input(event: InputEvent) -> void:
