@@ -6,8 +6,7 @@ var third_person_view: bool
 
 
 func _ready() -> void:
-	var PlayerScript := load("res://addons/Kale/tools/play/playtest_player.gd")
-	var player := PlayerScript.new()
+	var player = load("res://addons/Kale/tools/play/playtest_player.gd").new()
 	player.name = "_PlaytestPlayer"
 	player.third_person = third_person_view
 
