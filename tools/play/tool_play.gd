@@ -1,9 +1,6 @@
 @tool
 extends KaleBase
 
-const PLAYER_NAME := "_PlaytestPlayer"
-const PLAYER_SCRIPT := preload("res://addons/Kale/tools/play/playtest_player.gd")
-
 var _view_mode: OptionButton
 
 
@@ -32,50 +29,33 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
-	_spawn_player()
-	EditorInterface.play_current_scene()
-
-
-func _spawn_player() -> void:
-	var root_node := EditorInterface.get_edited_scene_root()
-	if not root_node:
-		return
-
-	_remove_player()
-
-	var viewport := EditorInterface.get_editor_viewport_3d(0)
-	if not viewport:
-		return
-	var editor_cam := viewport.get_camera_3d()
-	if not editor_cam:
-		return
-
-	var player := PLAYER_SCRIPT.new()
-	player.name = PLAYER_NAME
-
-	var col := CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.height = 1.8
-	shape.radius = 0.5
-	col.shape = shape
-	player.add_child(col)
-
-	var cam_node := Camera3D.new()
-	cam_node.name = "Camera3D"
-	player.add_child(cam_node)
-
-	root_node.add_child(player, true)
-	player.set_owner(root_node)
-
-	player.global_position = editor_cam.global_position
-	player.global_rotation = Vector3(0, editor_cam.global_rotation.y, 0)
-	player.third_person = _view_mode.selected == 1
-
-
-func _remove_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-	var player := root.get_node_or_null(PLAYER_NAME)
-	if player:
-		player.queue_free()
+
+	_cleanup()
+
+	var viewport := EditorInterface.get_editor_viewport_3d(0)
+	var cam := viewport.get_camera_3d() if viewport else null
+	if not cam:
+		return
+
+	var SpawnerScript := load("res://addons/Kale/tools/play/player_spawner.gd")
+	var spawner := SpawnerScript.new()
+	spawner.name = "_PlayerSpawner"
+	spawner.spawn_position = cam.global_position
+	spawner.spawn_rotation_y = cam.global_rotation.y
+	spawner.third_person_view = _view_mode.selected == 1
+	root.add_child(spawner, true)
+
+	EditorInterface.play_current_scene()
+
+
+func _cleanup() -> void:
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
+	for name in ["_PlaytestPlayer", "_PlayerSpawner"]:
+		var node := root.get_node_or_null(name)
+		if node:
+			node.queue_free()
