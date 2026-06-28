@@ -69,9 +69,9 @@ static func apply_environment(
 	env.background_mode = Environment.BG_SKY
 	env.sky_rotation = Vector3(0, deg_to_rad(rotation), 0)
 
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = ambient_color
 	env.ambient_light_energy = clamp(ambient_strength, 0.0, 4.0)
-	env.ambient_light_sky_contribution = 1.0
 
 
 static func clear_environment() -> void:

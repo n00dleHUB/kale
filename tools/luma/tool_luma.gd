@@ -145,7 +145,13 @@ func build_panel() -> Control:
 	_status.text = ""
 	_panel.add_child(_status)
 
-	_on_preset_changed(0)
+	var neutral_idx := 0
+	for i in range(_preset.item_count):
+		if _preset.get_item_text(i) == "Neutral":
+			neutral_idx = i
+			break
+	_preset.select(neutral_idx)
+	_on_preset_changed(neutral_idx)
 
 	return _panel
 
