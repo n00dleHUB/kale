@@ -1,3 +1,4 @@
+@tool
 extends CharacterBody3D
 
 var mouse_sensitivity := 0.002
@@ -14,12 +15,16 @@ var _tab_was_pressed := false
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	yaw = rotation.y
 	camera.current = true
 
 
 func _input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		pitch -= event.relative.y * mouse_sensitivity
 		yaw -= event.relative.x * mouse_sensitivity
@@ -27,6 +32,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	if Input.is_action_just_pressed("ui_cancel"):
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -35,6 +42,8 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	var tab_down := Input.is_key_pressed(KEY_TAB)
 	if tab_down and not _tab_was_pressed:
 		third_person = not third_person

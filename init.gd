@@ -24,8 +24,7 @@ func _remove_playtest_player() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-	for name in ["_PlaytestPlayer", "_PlayerSpawner"]:
-		var node := root.get_node_or_null(name)
+	var node := root.get_node_or_null("_PlaytestPlayer")
 		if node:
 			node.queue_free()
 
