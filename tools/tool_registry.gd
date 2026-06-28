@@ -47,4 +47,7 @@ static func _create_tools() -> Array[KaleBase]:
 	var ToolChroma = preload("res://addons/Kale/tools/chroma/tool_chroma.gd")
 	result.append(ToolChroma.new())
 
+	var ToolLuma = preload("res://addons/Kale/tools/luma/tool_luma.gd")
+	result.append(ToolLuma.new())
+
 	return result
