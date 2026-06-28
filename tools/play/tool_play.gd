@@ -40,10 +40,39 @@ func build_panel() -> Control:
 
 
 func _on_play() -> void:
+	_persist_chroma_materials()
 	var err := EditorInterface.save_scene()
 	if err != OK:
 		push_warning("Kale Play: scene save failed (", err, ")")
 	EditorInterface.play_current_scene()
+
+
+func _persist_chroma_materials() -> void:
+	DirAccess.make_dir_recursive_absolute("user://_kale_mats/")
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
+	var nodes: Array[Node] = []
+	_gather_chroma_nodes(root, nodes)
+	for n in nodes:
+		var mat := n.material_override if n is MeshInstance3D else (n.material if n is MultiMeshInstance3D else null) as Material
+		if not mat:
+			continue
+		var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
+		if ResourceSaver.save(mat, mat_path) == OK:
+			var saved := ResourceLoader.load(mat_path)
+			if saved:
+				if n is MeshInstance3D:
+					n.material_override = saved
+				elif n is MultiMeshInstance3D:
+					n.material = saved
+
+
+func _gather_chroma_nodes(n: Node, out: Array[Node]) -> void:
+	if (n is MeshInstance3D or n is MultiMeshInstance3D) and n.has_meta("chroma_applied"):
+		out.append(n)
+	for c in n.get_children():
+		_gather_chroma_nodes(c, out)
 
 
 func _add_player() -> void:

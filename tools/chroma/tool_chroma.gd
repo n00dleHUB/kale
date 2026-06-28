@@ -612,13 +612,6 @@ func _live_update_selection() -> void:
 
 
 func _apply_node(n: Node, mat: Material) -> void:
-	DirAccess.make_dir_recursive_absolute("user://_kale_mats/")
-	var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
-	if ResourceSaver.save(mat, mat_path) == OK:
-		var saved := ResourceLoader.load(mat_path)
-		if saved:
-			mat = saved
-
 	if n is MeshInstance3D:
 		n.material_override = mat
 		if n.mesh:
