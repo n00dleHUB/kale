@@ -2,6 +2,7 @@
 extends EditorPlugin
 
 var _dock: Control
+var _was_playing := false
 
 
 func _enter_tree():
@@ -10,6 +11,22 @@ func _enter_tree():
 	_dock.name = "Kale"
 	add_control_to_dock(DOCK_SLOT_RIGHT_UL, _dock)
 	scene_changed.connect(_on_scene_changed)
+
+
+func _process(_delta: float) -> void:
+	var is_playing := EditorInterface.is_playing_scene()
+	if _was_playing and not is_playing:
+		_remove_playtest_player()
+	_was_playing = is_playing
+
+
+func _remove_playtest_player() -> void:
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
+	var player := root.get_node_or_null("_PlaytestPlayer")
+	if player:
+		player.queue_free()
 
 
 func _exit_tree():

@@ -8,7 +8,7 @@ var camera_distance := 3.0
 var third_person := false
 var pitch := 0.0
 var yaw := 0.0
-var _t_was_pressed := false
+var _tab_was_pressed := false
 
 @onready var camera := $Camera3D as Camera3D
 
@@ -35,10 +35,10 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var t_down := Input.is_key_pressed(KEY_T)
-	if t_down and not _t_was_pressed:
+	var tab_down := Input.is_key_pressed(KEY_TAB)
+	if tab_down and not _tab_was_pressed:
 		third_person = not third_person
-	_t_was_pressed = t_down
+	_tab_was_pressed = tab_down
 
 	var raw := Vector3(
 		Input.get_axis(KEY_A, KEY_D),
