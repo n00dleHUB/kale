@@ -233,6 +233,7 @@ func build_panel() -> Control:
 
 	_scan_textures()
 	_update_pattern_visibility()
+	_clean_stale_mat_files()
 
 	return _panel
 
@@ -611,6 +612,13 @@ func _live_update_selection() -> void:
 
 
 func _apply_node(n: Node, mat: Material) -> void:
+	DirAccess.make_dir_recursive_absolute("user://_kale_mats/")
+	var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
+	if ResourceSaver.save(mat, mat_path) == OK:
+		var saved := ResourceLoader.load(mat_path)
+		if saved:
+			mat = saved
+
 	if n is MeshInstance3D:
 		n.material_override = mat
 		if n.mesh:
@@ -734,6 +742,9 @@ func _clear_all() -> void:
 
 func _clear_node(n: Node) -> void:
 	if n.has_meta("chroma_applied"):
+		var mat_path := "user://_kale_mats/%d.tres" % n.get_instance_id()
+		if FileAccess.file_exists(mat_path):
+			DirAccess.remove_absolute(mat_path)
 		if n is MeshInstance3D:
 			n.material_override = null
 			if n.mesh:
@@ -910,6 +921,27 @@ func load_cache() -> void:
 
 func on_editor_scene_changed(_root: Node) -> void:
 	load_cache()
+
+
+func _clean_stale_mat_files() -> void:
+	var dir := DirAccess.open("user://_kale_mats")
+	if dir:
+		var active_ids: Array[int] = []
+		var root := EditorInterface.get_edited_scene_root()
+		if root:
+			var nodes: Array[Node3D] = []
+			_gather_mesh_nodes(root, nodes)
+			for n in nodes:
+				active_ids.append(n.get_instance_id())
+		dir.list_dir_begin()
+		var f := dir.get_next()
+		while f != "":
+			if f.ends_with(".tres"):
+				var id_str := f.trim_suffix(".tres")
+				if not id_str.is_valid_int() or not active_ids.has(id_str.to_int()):
+					dir.remove(f)
+			f = dir.get_next()
+		dir.list_dir_end()
 
 
 func _clear_cache() -> void:
