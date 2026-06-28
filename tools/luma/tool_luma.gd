@@ -14,6 +14,16 @@ var _rotation_slider: HSlider
 var _ambient_color: ColorPickerButton
 var _ambient_spin: SpinBox
 var _ambient_slider: HSlider
+
+var _sun_enabled: CheckBox
+var _sun_elevation_spin: SpinBox
+var _sun_elevation_slider: HSlider
+var _sun_azimuth_spin: SpinBox
+var _sun_azimuth_slider: HSlider
+var _sun_color: ColorPickerButton
+var _sun_energy_spin: SpinBox
+var _sun_energy_slider: HSlider
+
 var _status: Label
 
 var _setting_slider := false
@@ -126,6 +136,81 @@ func build_panel() -> Control:
 
 	_panel.add_child(_make_section("Ambient", false, amb_body))
 
+	# Sun section
+	var sun_body := VBoxContainer.new()
+
+	_sun_enabled = CheckBox.new()
+	_sun_enabled.text = "Sun Enabled"
+	_sun_enabled.toggled.connect(func(_t: bool): _on_changed())
+	sun_body.add_child(_sun_enabled)
+
+	_sun_elevation_spin = SpinBox.new()
+	_sun_elevation_slider = HSlider.new()
+	sun_body.add_child(_make_slider_row("Elevation:", _sun_elevation_spin, _sun_elevation_slider, 0.0, 90.0, 0.1, 45.0))
+	_sun_elevation_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_elevation_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_sun_elevation_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_elevation_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+
+	_sun_azimuth_spin = SpinBox.new()
+	_sun_azimuth_slider = HSlider.new()
+	sun_body.add_child(_make_slider_row("Azimuth:", _sun_azimuth_spin, _sun_azimuth_slider, 0.0, 360.0, 0.1, 0.0))
+	_sun_azimuth_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_azimuth_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_sun_azimuth_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_azimuth_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+
+	var sun_color_row := HBoxContainer.new()
+	var sun_color_lbl := Label.new()
+	sun_color_lbl.text = "Color:"
+	sun_color_row.add_child(sun_color_lbl)
+	_sun_color = ColorPickerButton.new()
+	_sun_color.color = Color(1, 0.96, 0.9)
+	_sun_color.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sun_color.color_changed.connect(func(_c): _on_changed())
+	sun_color_row.add_child(_sun_color)
+	sun_body.add_child(sun_color_row)
+
+	_sun_energy_spin = SpinBox.new()
+	_sun_energy_slider = HSlider.new()
+	sun_body.add_child(_make_slider_row("Energy:", _sun_energy_spin, _sun_energy_slider, 0.0, 10.0, 0.01, 1.0))
+	_sun_energy_slider.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_energy_spin.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+	_sun_energy_spin.value_changed.connect(func(v):
+		if _setting_slider: return
+		_setting_slider = true
+		_sun_energy_slider.value = v
+		_setting_slider = false
+		_on_changed()
+	)
+
+	_panel.add_child(_make_section("Sun", true, sun_body))
+
 	# Buttons
 	var btn_row := HBoxContainer.new()
 	var apply_btn := Button.new()
@@ -216,6 +301,14 @@ func _on_preset_changed(idx: int) -> void:
 	_ambient_color.color = data.get("ambient", Color.WHITE)
 	_ambient_slider.value = data.get("ambient_strength", 0.6)
 	_ambient_spin.value = data.get("ambient_strength", 0.6)
+	_sun_enabled.button_pressed = data.get("sun", true)
+	_sun_elevation_slider.value = data.get("sun_elevation", 45.0)
+	_sun_elevation_spin.value = data.get("sun_elevation", 45.0)
+	_sun_azimuth_slider.value = data.get("sun_azimuth", 0.0)
+	_sun_azimuth_spin.value = data.get("sun_azimuth", 0.0)
+	_sun_color.color = data.get("sun_color", Color(1, 0.96, 0.9))
+	_sun_energy_slider.value = data.get("sun_energy", 1.0)
+	_sun_energy_spin.value = data.get("sun_energy", 1.0)
 	_setting_slider = false
 	_live_update()
 
@@ -230,21 +323,26 @@ func _live_update() -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-	var we := root.get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if not we or not we.environment:
-		return
-	var env := we.environment
-	var sky := env.sky
-	if not sky:
-		return
-	var mat := sky.sky_material as PanoramaSkyMaterial
-	if not mat:
-		return
 
-	mat.energy_multiplier = _intensity_spin.value
-	env.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
-	env.ambient_light_color = _ambient_color.color
-	env.ambient_light_energy = _ambient_spin.value
+	var we := root.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if we and we.environment:
+		var env := we.environment
+		var sky := env.sky
+		if sky:
+			var mat := sky.sky_material as PanoramaSkyMaterial
+			if mat:
+				mat.energy_multiplier = _intensity_spin.value
+		env.sky_rotation = Vector3(0, deg_to_rad(_rotation_spin.value), 0)
+		env.ambient_light_color = _ambient_color.color
+		env.ambient_light_energy = _ambient_spin.value
+
+	Env.update_sun(
+		_sun_enabled.button_pressed,
+		_sun_elevation_spin.value,
+		_sun_azimuth_spin.value,
+		_sun_color.color,
+		_sun_energy_spin.value,
+	)
 
 
 func _on_apply() -> void:
@@ -264,12 +362,20 @@ func _on_apply() -> void:
 		_ambient_color.color,
 		_ambient_spin.value,
 	)
-	_flash_status("Environment applied", Color(0, 1, 0))
+	Env.update_sun(
+		_sun_enabled.button_pressed,
+		_sun_elevation_spin.value,
+		_sun_azimuth_spin.value,
+		_sun_color.color,
+		_sun_energy_spin.value,
+	)
+	_flash_status("Environment + Sun applied", Color(0, 1, 0))
 
 
 func _on_clear() -> void:
 	Env.clear_environment()
-	_flash_status("Environment cleared", Color(1, 0.7, 0))
+	Env.clear_sun()
+	_flash_status("Environment + Sun cleared", Color(1, 0.7, 0))
 
 
 func _flash_status(msg: String, col: Color) -> void:
