@@ -47,7 +47,7 @@ func _on_play() -> void:
 	var wrapper := Node3D.new()
 	wrapper.name = "KalePlaytest"
 
-	var user_scene := load(scene_path).instantiate()
+	var user_scene = load(scene_path).instantiate()
 	wrapper.add_child(user_scene)
 	user_scene.owner = wrapper
 
