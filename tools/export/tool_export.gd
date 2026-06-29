@@ -59,7 +59,8 @@ func build_panel() -> Control:
 
 		if saved_order[i] == 0:
 			_del_input = LineEdit.new()
-			_del_input.placeholder_text = "e.g. myAsset_*"
+			_del_input.placeholder_text = "unreal_export"
+			_del_input.text = "unreal_export"
 			_del_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			hbox.add_child(_del_input)
 

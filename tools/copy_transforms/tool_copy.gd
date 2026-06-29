@@ -21,6 +21,7 @@ func build_panel() -> Control:
 
 	var src_path = LineEdit.new()
 	src_path.placeholder_text = "Select a node in viewport"
+	src_path.text = "pos"
 	src_path.editable = false
 	src_path.custom_minimum_size = Vector2(180, 0)
 	src_path.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -43,6 +44,7 @@ func build_panel() -> Control:
 
 	var tgt_path = LineEdit.new()
 	tgt_path.placeholder_text = "Select a node in viewport"
+	tgt_path.text = "unreal_export"
 	tgt_path.editable = false
 	tgt_path.custom_minimum_size = Vector2(180, 0)
 	tgt_path.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -136,16 +138,32 @@ func _on_copy_pressed() -> void:
 			target = n
 
 	if not source:
-		_show_status("Source node not found — re-select it", Color(1, 0, 0))
-		src_path_field.text = ""
-		src_path_field.remove_meta("node_path")
-		return
+		var name := src_path_field.text.strip_edges()
+		if name.is_empty():
+			_show_status("Source node not found — re-select it", Color(1, 0, 0))
+			src_path_field.text = ""
+			src_path_field.remove_meta("node_path")
+			return
+		source = root.find_child(name, true, false)
+		if not source:
+			_show_status("Source node not found — re-select it", Color(1, 0, 0))
+			src_path_field.text = ""
+			src_path_field.remove_meta("node_path")
+			return
 
 	if not target:
-		_show_status("Target node not found — re-select it", Color(1, 0, 0))
-		tgt_path_field.text = ""
-		tgt_path_field.remove_meta("node_path")
-		return
+		var name := tgt_path_field.text.strip_edges()
+		if name.is_empty():
+			_show_status("Target node not found — re-select it", Color(1, 0, 0))
+			tgt_path_field.text = ""
+			tgt_path_field.remove_meta("node_path")
+			return
+		target = root.find_child(name, true, false)
+		if not target:
+			_show_status("Target node not found — re-select it", Color(1, 0, 0))
+			tgt_path_field.text = ""
+			tgt_path_field.remove_meta("node_path")
+			return
 
 	var pos = _find_toggle("toggle_pos").button_pressed
 	var rot = _find_toggle("toggle_rot").button_pressed
