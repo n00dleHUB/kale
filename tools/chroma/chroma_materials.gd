@@ -10,7 +10,7 @@ const PRESETS := {
 	"Dirt": { "color": Color.WHITE, "rough": 1.0, "spec": 0.1, "opacity": 1.0, "tiling": 2.0, "texture": "res://addons/Kale/textures/dirt.png" },
 	"Glass": { "color": Color(0.78, 0.85, 0.98), "rough": 0.05, "spec": 1.0, "opacity": 0.2, "tiling": 1.0, "texture": "" },
 	"Gravel": { "color": Color.WHITE, "rough": 1.0, "spec": 0.2, "opacity": 1.0, "tiling": 4.0, "texture": "res://addons/Kale/textures/gravel.png" },
-	"Metal": { "color": Color.WHITE, "rough": 0.5, "spec": 1.0, "opacity": 1.0, "tiling": 3.0, "texture": "res://addons/Kale/textures/metal.png" },
+	"Metal": { "color": Color(0, 0, 0), "rough": 0.25, "spec": 1.0, "opacity": 1.0, "tiling": 1.0, "texture": "" },
 	"Planks": { "color": Color.WHITE, "rough": 0.7, "spec": 0.4, "opacity": 1.0, "tiling": 2.0, "texture": "res://addons/Kale/textures/planks.png" },
 	"Rock": { "color": Color.WHITE, "rough": 0.9, "spec": 0.2, "opacity": 1.0, "tiling": 2.0, "texture": "res://addons/Kale/textures/rock.png" },
 	"Rocks River": { "color": Color.WHITE, "rough": 0.9, "spec": 0.2, "opacity": 1.0, "tiling": 3.0, "texture": "res://addons/Kale/textures/rocks_river.png" },
@@ -20,7 +20,7 @@ const PRESETS := {
 	"Tiles Marble": { "color": Color.WHITE, "rough": 0.3, "spec": 0.7, "opacity": 1.0, "tiling": 2.0, "texture": "res://addons/Kale/textures/tiles_marble.png" },
 	"Tiles Terracotta": { "color": Color.WHITE, "rough": 0.7, "spec": 0.4, "opacity": 1.0, "tiling": 2.0, "texture": "res://addons/Kale/textures/tiles_terracotta.png" },
 	"UV": { "color": Color.WHITE, "rough": 0.5, "spec": 0.5, "opacity": 1.0, "tiling": 1.0, "texture": "" },
-	"Water": { "color": Color(0.2, 0.4, 0.7), "rough": 0.1, "spec": 0.8, "opacity": 0.75, "tiling": 2.0, "texture": "" },
+	"Water": { "color": Color(0.2, 0.4, 0.7), "rough": 0.0, "spec": 1.0, "opacity": 0.75, "tiling": 2.0, "texture": "" },
 	"Wood": { "color": Color.WHITE, "rough": 0.7, "spec": 0.3, "opacity": 1.0, "tiling": 4.0, "texture": "res://addons/Kale/textures/wood.png" },
 }
 
