@@ -868,58 +868,17 @@ func load_cache() -> void:
 			continue
 		var data: Dictionary = assignments[np_str]
 
-		var preset: String = data.get("preset", "Basic")
-		var pidx := 0
-		for i in range(_preset.item_count):
-			if _preset.get_item_text(i) == preset:
-				pidx = i
-				break
-		_preset.selected = pidx
-
-		_color_picker.color = data.get("color", Color.WHITE)
-		_set_slider_values({
-			"spec": data.get("specular", 0.5),
-			"rough": data.get("roughness", 0.5),
-			"opacity": data.get("opacity", 1.0),
-		})
-		_double_sided.button_pressed = data.get("double_sided", true)
-		_custom_tex_path.text = data.get("custom_texture", "")
-		_update_texture_list_selection()
-
-		_tiling_x_spin.value = data.get("tiling_x", 1.0)
-		_tiling_y_spin.value = data.get("tiling_y", 1.0)
-		_tiling_scale_spin.value = data.get("tiling_scale", 1.0)
-
-		var uv_mode: String = data.get("uv_mode", "projected")
-		var mode_idx := 0
-		for i in range(_uv_mode.item_count):
-			if _uv_mode.get_item_text(i).to_lower() == uv_mode:
-				mode_idx = i
-				break
-		_uv_mode.selected = mode_idx
-		var is_triplanar := uv_mode == "triplanar"
-		_tiling_x_row.visible = not is_triplanar
-		_tiling_y_row.visible = not is_triplanar
-
-		_uv_space.selected = data.get("uv_space", UV_SPACE_LOCAL)
-
-		var pattern: String = data.get("pattern", "None")
-		for i in range(_pattern.item_count):
-			if _pattern.get_item_text(i) == pattern:
-				_pattern.selected = i
-				break
-		_update_pattern_visibility()
-
-		var bomb: bool = data.get("bomb", false)
-		_fix_tiling.button_pressed = bomb
-
-		var scale_v: float = data.get("tiling_scale", 1.0)
-
 		var cache_key := data.hash()
 		var mat: Material
 		if _mat_cache.has(cache_key):
 			mat = _mat_cache[cache_key].duplicate()
 		else:
+			var preset: String = data.get("preset", "Basic")
+			var uv_mode: String = data.get("uv_mode", "projected")
+			var pattern: String = data.get("pattern", "None")
+			var bomb: bool = data.get("bomb", false)
+			var scale_v: float = data.get("tiling_scale", 1.0)
+
 			mat = Materials.create_material(
 				preset,
 				data.get("color", Color.WHITE),
@@ -941,7 +900,6 @@ func load_cache() -> void:
 			node.material_override = mat
 		elif node is MultiMeshInstance3D:
 			node.material = mat
-
 		node.set_meta("chroma_applied", true)
 
 	_loading_cache = false
