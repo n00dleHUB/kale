@@ -83,7 +83,7 @@ func build_panel() -> Control:
 	_pattern = OptionButton.new()
 	for p in Materials.PATTERN_NAMES:
 		_pattern.add_item(p)
-	_pattern.selected = 0
+	_pattern.selected = 1
 	_pattern.item_selected.connect(_on_pattern_changed)
 	_pattern_row.add_child(_pattern)
 	_pattern_row.visible = true
