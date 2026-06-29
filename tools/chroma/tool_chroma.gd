@@ -52,6 +52,7 @@ var _status: Label
 var _scene_root: Node
 
 var _setting_slider := false
+var _loading_cache := false
 static var _random_seed := 0
 
 
@@ -599,6 +600,8 @@ func _update_pattern_visibility() -> void:
 
 
 func _live_update_selection() -> void:
+	if _loading_cache:
+		return
 	var nodes := _get_selected_mesh_nodes()
 	if nodes.is_empty():
 		return
@@ -808,13 +811,16 @@ func _build_cache_recursive(n: Node, root: Node, out: Dictionary) -> void:
 
 
 func load_cache() -> void:
+	_loading_cache = true
 	var root := EditorInterface.get_edited_scene_root()
 	_scene_root = root
 	if not root:
+		_loading_cache = false
 		return
 
 	var assignments := Cache.load_for_scene(root)
 	if assignments.is_empty():
+		_loading_cache = false
 		return
 
 	for np_str in assignments.keys():
@@ -892,6 +898,7 @@ func load_cache() -> void:
 
 		node.set_meta("chroma_applied", true)
 
+	_loading_cache = false
 	_set_status("Chroma restored for " + str(assignments.size()) + " nodes", Color(0, 1, 0))
 
 
