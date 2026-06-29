@@ -1,7 +1,7 @@
 @tool
 extends KaleBase
 
-const STEP_NAMES := ["Import", "Delete", "Copy Transforms", "Chroma", "Export"]
+const STEP_NAMES := ["Delete", "Import", "Copy Transforms", "Chroma", "Export"]
 const ES_PREFIX := "kale/export/"
 
 var _step_toggles: Array[CheckBox] = []
@@ -28,16 +28,6 @@ func build_panel() -> Control:
 	var lbl := Label.new()
 	lbl.text = "Chain steps to run in order:"
 	panel.add_child(lbl)
-
-	var del_row := HBoxContainer.new()
-	var del_lbl := Label.new()
-	del_lbl.text = "Delete:"
-	del_row.add_child(del_lbl)
-	_del_input = LineEdit.new()
-	_del_input.placeholder_text = "e.g. myAsset_*"
-	_del_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	del_row.add_child(_del_input)
-	panel.add_child(del_row)
 
 	var saved_order = _es_get("chain_order", [0, 1, 2, 3, 4]) as Array
 	if saved_order.size() != 5:
@@ -66,6 +56,12 @@ func build_panel() -> Control:
 		down.custom_minimum_size = Vector2(24, 22)
 		down.pressed.connect(_move_step.bind(i, 1, step_list))
 		hbox.add_child(down)
+
+		if saved_order[i] == 0:
+			_del_input = LineEdit.new()
+			_del_input.placeholder_text = "e.g. myAsset_*"
+			_del_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			hbox.add_child(_del_input)
 
 		_step_toggles.append(toggle)
 		_step_rows.append(hbox)
@@ -141,8 +137,8 @@ func _run_chain() -> void:
 
 func _execute_step(idx: int) -> bool:
 	match idx:
-		0: return await _step_import()
-		1: return _step_delete()
+		0: return _step_delete()
+		1: return await _step_import()
 		2: return _step_copy()
 		3: return _step_chroma()
 		4: return _step_export()
