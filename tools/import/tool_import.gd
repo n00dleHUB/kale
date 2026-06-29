@@ -47,7 +47,7 @@ func build_panel() -> Control:
 	_mode_dropdown = OptionButton.new()
 	_mode_dropdown.add_item("Latest Version", MODE_VERSION)
 	_mode_dropdown.add_item("Latest Date", MODE_DATE)
-	_mode_dropdown.selected = MODE_VERSION
+	_mode_dropdown.selected = MODE_DATE
 	_panel.add_child(_mode_dropdown)
 
 	# Make Local toggle

@@ -176,7 +176,7 @@ func _find_tool(name: String) -> KaleBase:
 		return null
 	for child in dock.get_children():
 		if child is Control and child.name == name and child.get_child_count() > 0:
-			return child.get_child(0) as KaleBase
+			return child.get_child(child.get_child_count() - 1) as KaleBase
 	return null
 
 
