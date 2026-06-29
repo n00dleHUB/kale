@@ -1,11 +1,12 @@
 @tool
 extends KaleBase
 
-const STEP_NAMES := ["Import", "Copy Transforms", "Chroma", "Export"]
+const STEP_NAMES := ["Import", "Delete", "Copy Transforms", "Chroma", "Export"]
 const ES_PREFIX := "kale/export/"
 
 var _step_toggles: Array[CheckBox] = []
 var _step_rows: Array[HBoxContainer] = []
+var _del_input: LineEdit
 var _status: Label
 
 
@@ -28,12 +29,22 @@ func build_panel() -> Control:
 	lbl.text = "Chain steps to run in order:"
 	panel.add_child(lbl)
 
-	var saved_order = _es_get("chain_order", [0, 1, 2, 3]) as Array
-	if saved_order.size() != 4:
-		saved_order = [0, 1, 2, 3]
+	var del_row := HBoxContainer.new()
+	var del_lbl := Label.new()
+	del_lbl.text = "Delete:"
+	del_row.add_child(del_lbl)
+	_del_input = LineEdit.new()
+	_del_input.placeholder_text = "e.g. myAsset_*"
+	_del_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	del_row.add_child(_del_input)
+	panel.add_child(del_row)
+
+	var saved_order = _es_get("chain_order", [0, 1, 2, 3, 4]) as Array
+	if saved_order.size() != 5:
+		saved_order = [0, 1, 2, 3, 4]
 
 	var step_list := VBoxContainer.new()
-	for i in 4:
+	for i in 5:
 		var hbox := HBoxContainer.new()
 		var toggle := CheckBox.new()
 		toggle.text = STEP_NAMES[saved_order[i]]
@@ -77,10 +88,10 @@ func build_panel() -> Control:
 
 func _move_step(idx: int, dir: int, list: VBoxContainer) -> void:
 	var new_idx := idx + dir
-	if new_idx < 0 or new_idx >= 4:
+	if new_idx < 0 or new_idx >= 5:
 		return
 	var es := EditorInterface.get_editor_settings()
-	var order = _es_get("chain_order", [0, 1, 2, 3]) as Array
+	var order = _es_get("chain_order", [0, 1, 2, 3, 4]) as Array
 	var tmp = order[idx]
 	order[idx] = order[new_idx]
 	order[new_idx] = tmp
@@ -99,15 +110,15 @@ func _move_step(idx: int, dir: int, list: VBoxContainer) -> void:
 
 
 func _rebuild_labels(order: Array) -> void:
-	for i in 4:
+	for i in 5:
 		_step_toggles[i].text = STEP_NAMES[order[i]]
 
 
 func _run_chain() -> void:
-	var order = _es_get("chain_order", [0, 1, 2, 3]) as Array
+	var order = _es_get("chain_order", [0, 1, 2, 3, 4]) as Array
 
 	var total := 0
-	for i in 4:
+	for i in 5:
 		if _step_toggles[i].button_pressed:
 			total += 1
 	if total == 0:
@@ -116,7 +127,7 @@ func _run_chain() -> void:
 
 	var report: PackedStringArray = []
 	var current := 0
-	for i in 4:
+	for i in 5:
 		if not _step_toggles[i].button_pressed:
 			continue
 		var step_idx = order[i] as int
@@ -131,9 +142,10 @@ func _run_chain() -> void:
 func _execute_step(idx: int) -> bool:
 	match idx:
 		0: return await _step_import()
-		1: return _step_copy()
-		2: return _step_chroma()
-		3: return _step_export()
+		1: return _step_delete()
+		2: return _step_copy()
+		3: return _step_chroma()
+		4: return _step_export()
 	return false
 
 
@@ -144,6 +156,26 @@ func _step_import() -> bool:
 	tool._on_import_pressed()
 	await get_tree().process_frame
 	return true
+
+
+func _step_delete() -> bool:
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return false
+	var pattern := _del_input.text.strip_edges()
+	if pattern.is_empty():
+		return false
+	var prefix := pattern.split("*")[0]
+	if prefix.is_empty():
+		return false
+
+	var deleted := 0
+	for child in root.get_children().duplicate():
+		if child.name.begins_with(prefix):
+			child.free()
+			deleted += 1
+
+	return deleted > 0
 
 
 func _step_copy() -> bool:
