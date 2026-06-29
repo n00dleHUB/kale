@@ -223,15 +223,19 @@ func build_panel() -> Control:
 	_panel.add_child(row3)
 
 	var row4 := HBoxContainer.new()
-	_auto_restore = CheckBox.new()
-	_auto_restore.text = "Auto-restore"
-	_auto_restore.button_pressed = true
-	row4.add_child(_auto_restore)
-
 	var restore_btn := Button.new()
 	restore_btn.text = "Restore Materials"
 	restore_btn.pressed.connect(load_cache)
 	row4.add_child(restore_btn)
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row4.add_child(spacer)
+
+	_auto_restore = CheckBox.new()
+	_auto_restore.text = "Auto-restore"
+	_auto_restore.button_pressed = true
+	row4.add_child(_auto_restore)
 	_panel.add_child(row4)
 
 	_file_dialog = FileDialog.new()
