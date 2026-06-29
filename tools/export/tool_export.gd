@@ -114,6 +114,7 @@ func _run_chain() -> void:
 		_set_status("No steps enabled", Color(1, 0.5, 0))
 		return
 
+	var report: PackedStringArray = []
 	var current := 0
 	for i in 4:
 		if not _step_toggles[i].button_pressed:
@@ -121,45 +122,52 @@ func _run_chain() -> void:
 		var step_idx = order[i] as int
 		current += 1
 		_set_status("Step " + str(current) + "/" + str(total) + ": " + STEP_NAMES[step_idx])
-		await _execute_step(step_idx)
+		var ok = await _execute_step(step_idx)
+		report.append(("✔ " if ok else "✘ ") + STEP_NAMES[step_idx])
 
-	_set_status("Chain complete (" + str(total) + " steps)", Color(0, 1, 0))
+	_set_status("Chain: " + ", ".join(report))
 
 
-func _execute_step(idx: int) -> void:
+func _execute_step(idx: int) -> bool:
 	match idx:
-		0: _step_import()
-		1: _step_copy()
-		2: _step_chroma()
-		3: _step_export()
+		0: return await _step_import()
+		1: return _step_copy()
+		2: return _step_chroma()
+		3: return _step_export()
+	return false
 
 
-func _step_import() -> void:
+func _step_import() -> bool:
 	var tool := _find_tool("Import")
 	if not tool or not tool.has_method("_on_import_pressed"):
-		return
+		return false
 	tool._on_import_pressed()
+	await get_tree().process_frame
+	return true
 
 
-func _step_copy() -> void:
+func _step_copy() -> bool:
 	var tool := _find_tool("Copy Transforms")
 	if not tool or not tool.has_method("_on_copy_pressed"):
-		return
+		return false
 	tool._on_copy_pressed()
+	return true
 
 
-func _step_chroma() -> void:
+func _step_chroma() -> bool:
 	var tool := _find_tool("Chroma")
 	if not tool or not tool.has_method("_apply_all"):
-		return
+		return false
 	tool._apply_all()
+	return true
 
 
-func _step_export() -> void:
+func _step_export() -> bool:
 	var btn := EditorInterface.get_base_control().find_child("ExportLevel_Button", true, false)
 	if not btn or not btn is BaseButton:
-		return
+		return false
 	btn.pressed.emit()
+	return true
 
 
 func _find_tool(name: String) -> KaleBase:
