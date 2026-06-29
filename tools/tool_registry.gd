@@ -50,4 +50,7 @@ static func _create_tools() -> Array[KaleBase]:
 	var ToolCopy = preload("res://addons/Kale/tools/copy_transforms/tool_copy.gd")
 	result.append(ToolCopy.new())
 
+	var ToolExport = preload("res://addons/Kale/tools/export/tool_export.gd")
+	result.append(ToolExport.new())
+
 	return result
