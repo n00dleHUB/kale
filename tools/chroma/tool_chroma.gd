@@ -953,6 +953,8 @@ func load_cache() -> void:
 		elif node is MultiMeshInstance3D:
 			node.material = mat
 		node.set_meta("chroma_applied", true)
+		node.set_meta("chroma_params", data)
+		node.set_meta("chroma_color", data.get("color", Color.WHITE))
 
 	_loading_cache = false
 	_set_status("Chroma restored for " + str(assignments.size()) + " nodes", Color(0, 1, 0))
