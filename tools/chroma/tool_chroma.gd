@@ -214,7 +214,11 @@ func build_panel() -> Control:
 	var restore_btn := Button.new()
 	restore_btn.text = "Restore Materials"
 	restore_btn.custom_minimum_size = Vector2(0, 22)
-	restore_btn.pressed.connect(load_cache)
+	restore_btn.pressed.connect(func():
+		var root := EditorInterface.get_edited_scene_root()
+		if root and Cache.has_cache(root):
+			load_cache()
+	)
 	row3.add_child(restore_btn)
 
 	_auto_restore = CheckBox.new()
@@ -226,7 +230,6 @@ func build_panel() -> Control:
 		_auto_restore.button_pressed = false
 	_auto_restore.toggled.connect(func(pressed: bool):
 		es.set_setting("kale/chroma/auto_restore", pressed)
-		es.save()
 	)
 	row3.add_child(_auto_restore)
 	_panel.add_child(row3)

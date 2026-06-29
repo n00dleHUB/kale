@@ -62,6 +62,11 @@ static func load_for_scene(scene_root: Node) -> Dictionary:
 	return result
 
 
+static func has_cache(scene_root: Node) -> bool:
+	var path := _get_cache_path(scene_root)
+	return not path.is_empty() and FileAccess.file_exists(path)
+
+
 static func clear_all() -> void:
 	if not DirAccess.dir_exists_absolute(CACHE_DIR):
 		return
