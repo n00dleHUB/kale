@@ -234,7 +234,12 @@ func build_panel() -> Control:
 
 	_auto_restore = CheckBox.new()
 	_auto_restore.text = "Auto-restore"
-	_auto_restore.button_pressed = true
+	var es := EditorInterface.get_editor_settings()
+	_auto_restore.button_pressed = es.get_setting("kale/chroma/auto_restore", false)
+	_auto_restore.toggled.connect(func(pressed: bool):
+		es.set_setting("kale/chroma/auto_restore", pressed)
+		es.save()
+	)
 	row4.add_child(_auto_restore)
 	_panel.add_child(row4)
 
