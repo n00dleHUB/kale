@@ -684,9 +684,43 @@ func _apply_selected() -> void:
 	if nodes.is_empty():
 		_flash_status("Select mesh nodes first", Color(1, 0.5, 0))
 		return
-	var mat := _build_current_material()
-	for n in nodes:
-		_apply_node(n, mat)
+
+	var mode := _random_mode.selected
+	var base_mat := _build_current_material()
+
+	if mode == 1:
+		var groups: Dictionary = {}
+		for n in nodes:
+			var key := _asset_key_for_node(n)
+			if not groups.has(key):
+				groups[key] = []
+			groups[key].append(n)
+		var keys: Array = groups.keys()
+		keys.sort()
+		for i in range(keys.size()):
+			var col := _distinct_color(i, keys.size(), _random_seed)
+			var mat := base_mat.duplicate()
+			if mat is ShaderMaterial:
+				mat.set_shader_parameter("albedo_color", col)
+			elif mat is StandardMaterial3D:
+				mat.albedo_color = col
+			for n in groups[keys[i]]:
+				_apply_node(n, mat)
+		_random_seed += 1
+	elif mode == 2:
+		for i in range(nodes.size()):
+			var col := _distinct_color(i, nodes.size(), _random_seed)
+			var mat := base_mat.duplicate()
+			if mat is ShaderMaterial:
+				mat.set_shader_parameter("albedo_color", col)
+			elif mat is StandardMaterial3D:
+				mat.albedo_color = col
+			_apply_node(nodes[i], mat)
+		_random_seed += 1
+	else:
+		for n in nodes:
+			_apply_node(n, base_mat)
+
 	_save_cache()
 	_set_status("Applied to " + str(nodes.size()) + " nodes", Color(0, 1, 0))
 
@@ -762,13 +796,12 @@ func _clear_all() -> void:
 
 
 func _clear_node(n: Node) -> void:
-	if n.has_meta("chroma_applied"):
-		n.remove_meta("chroma_applied")
-		n.remove_meta("chroma_color")
-		if n is MeshInstance3D:
-			n.material_override = null
-		elif n is MultiMeshInstance3D:
-			n.material = null
+	n.remove_meta("chroma_applied")
+	n.remove_meta("chroma_color")
+	if n is MeshInstance3D:
+		n.material_override = null
+	elif n is MultiMeshInstance3D:
+		n.material = null
 
 
 func _gather_groups_by_asset(n: Node, groups: Dictionary) -> void:
