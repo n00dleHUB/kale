@@ -211,26 +211,11 @@ func build_panel() -> Control:
 	_panel.add_child(row2)
 
 	var row3 := HBoxContainer.new()
-	var clear_cache := Button.new()
-	clear_cache.text = "Clear Cache"
-	clear_cache.pressed.connect(_clear_cache)
-	row3.add_child(clear_cache)
-
-	var open_cache := Button.new()
-	open_cache.text = "Open Cache"
-	open_cache.pressed.connect(_open_cache)
-	row3.add_child(open_cache)
-	_panel.add_child(row3)
-
-	var row4 := HBoxContainer.new()
 	var restore_btn := Button.new()
 	restore_btn.text = "Restore Materials"
+	restore_btn.custom_minimum_size = Vector2(0, 22)
 	restore_btn.pressed.connect(load_cache)
-	row4.add_child(restore_btn)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row4.add_child(spacer)
+	row3.add_child(restore_btn)
 
 	_auto_restore = CheckBox.new()
 	_auto_restore.text = "Auto-restore"
@@ -240,7 +225,21 @@ func build_panel() -> Control:
 		es.set_setting("kale/chroma/auto_restore", pressed)
 		es.save()
 	)
-	row4.add_child(_auto_restore)
+	row3.add_child(_auto_restore)
+	_panel.add_child(row3)
+
+	var row4 := HBoxContainer.new()
+	var clear_cache := Button.new()
+	clear_cache.text = "Clear Cache"
+	clear_cache.custom_minimum_size = Vector2(0, 22)
+	clear_cache.pressed.connect(_clear_cache)
+	row4.add_child(clear_cache)
+
+	var open_cache := Button.new()
+	open_cache.text = "Open Cache"
+	open_cache.custom_minimum_size = Vector2(0, 22)
+	open_cache.pressed.connect(_open_cache)
+	row4.add_child(open_cache)
 	_panel.add_child(row4)
 
 	_file_dialog = FileDialog.new()
