@@ -99,11 +99,16 @@ func _on_select_node(path_field: LineEdit) -> void:
 	var selected = EditorInterface.get_selection().get_selected_nodes()
 	if selected.size() > 0:
 		var node = selected[0]
-		path_field.text = node.name
-		path_field.set_meta("node_ref", node)
+		var root := EditorInterface.get_edited_scene_root()
+		if root and root.is_ancestor_of(node):
+			path_field.text = node.name
+			path_field.set_meta("node_path", root.get_path_to(node))
+		else:
+			path_field.text = ""
+			path_field.remove_meta("node_path")
 	else:
 		path_field.text = ""
-		path_field.remove_meta("node_ref")
+		path_field.remove_meta("node_path")
 
 
 func _on_copy_pressed() -> void:
@@ -113,11 +118,33 @@ func _on_copy_pressed() -> void:
 	if not src_path_field or not tgt_path_field:
 		return
 
-	var source = src_path_field.get_meta("node_ref") if src_path_field.has_meta("node_ref") else null
-	var target = tgt_path_field.get_meta("node_ref") if tgt_path_field.has_meta("node_ref") else null
+	var root := EditorInterface.get_edited_scene_root()
+	if not root:
+		return
 
-	if not source or not target:
-		_show_status("Select both Source and Target nodes", Color(1, 0, 0))
+	var source: Node3D = null
+	var target: Node3D = null
+
+	if src_path_field.has_meta("node_path"):
+		var n = root.get_node(src_path_field.get_meta("node_path"))
+		if n is Node3D:
+			source = n
+
+	if tgt_path_field.has_meta("node_path"):
+		var n = root.get_node(tgt_path_field.get_meta("node_path"))
+		if n is Node3D:
+			target = n
+
+	if not source:
+		_show_status("Source node not found — re-select it", Color(1, 0, 0))
+		src_path_field.text = ""
+		src_path_field.remove_meta("node_path")
+		return
+
+	if not target:
+		_show_status("Target node not found — re-select it", Color(1, 0, 0))
+		tgt_path_field.text = ""
+		tgt_path_field.remove_meta("node_path")
 		return
 
 	var pos = _find_toggle("toggle_pos").button_pressed
