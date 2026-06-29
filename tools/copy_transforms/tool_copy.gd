@@ -138,7 +138,7 @@ func _on_copy_pressed() -> void:
 			target = n
 
 	if not source:
-		var name := src_path_field.text.strip_edges()
+		var name = src_path_field.text.strip_edges()
 		if name.is_empty():
 			_show_status("Source node not found — re-select it", Color(1, 0, 0))
 			src_path_field.text = ""
@@ -152,7 +152,7 @@ func _on_copy_pressed() -> void:
 			return
 
 	if not target:
-		var name := tgt_path_field.text.strip_edges()
+		var name = tgt_path_field.text.strip_edges()
 		if name.is_empty():
 			_show_status("Target node not found — re-select it", Color(1, 0, 0))
 			tgt_path_field.text = ""
