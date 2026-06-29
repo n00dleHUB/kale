@@ -850,6 +850,8 @@ func load_cache() -> void:
 		_loading_cache = false
 		return
 
+	var _mat_cache: Dictionary = {}
+
 	for np_str in assignments.keys():
 		var node := root.get_node_or_null(np_str)
 		if not node:
@@ -902,21 +904,28 @@ func load_cache() -> void:
 		_fix_tiling.button_pressed = bomb
 
 		var scale_v: float = data.get("tiling_scale", 1.0)
-		var mat := Materials.create_material(
-			preset,
-			data.get("color", Color.WHITE),
-			data.get("specular", 0.5),
-			data.get("roughness", 0.5),
-			data.get("opacity", 1.0),
-			data.get("double_sided", false),
-			data.get("custom_texture", ""),
-			data.get("tiling_x", 1.0) * scale_v,
-			data.get("tiling_y", 1.0) * scale_v,
-			data.get("uv_space", UV_SPACE_LOCAL),
-			uv_mode,
-			pattern,
-			bomb
-		)
+
+		var cache_key := data.hash()
+		var mat: Material
+		if _mat_cache.has(cache_key):
+			mat = _mat_cache[cache_key].duplicate()
+		else:
+			mat = Materials.create_material(
+				preset,
+				data.get("color", Color.WHITE),
+				data.get("specular", 0.5),
+				data.get("roughness", 0.5),
+				data.get("opacity", 1.0),
+				data.get("double_sided", false),
+				data.get("custom_texture", ""),
+				data.get("tiling_x", 1.0) * scale_v,
+				data.get("tiling_y", 1.0) * scale_v,
+				data.get("uv_space", UV_SPACE_LOCAL),
+				uv_mode,
+				pattern,
+				bomb
+			)
+			_mat_cache[cache_key] = mat
 
 		if node is MeshInstance3D:
 			node.material_override = mat
