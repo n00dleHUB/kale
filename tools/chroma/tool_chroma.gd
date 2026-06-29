@@ -645,6 +645,15 @@ func _apply_node(n: Node, mat: Material) -> void:
 		n.material = mat
 		n.set_meta("chroma_applied", true)
 
+	var actual_color := Color.WHITE
+	if mat is ShaderMaterial:
+		var v = mat.get_shader_parameter("albedo_color")
+		if v != null:
+			actual_color = v as Color
+	elif mat is StandardMaterial3D:
+		actual_color = mat.albedo_color
+	n.set_meta("chroma_color", actual_color)
+
 
 func _apply_to_node(n: Node) -> void:
 	_apply_node(n, _build_current_material())
@@ -755,6 +764,7 @@ func _clear_all() -> void:
 func _clear_node(n: Node) -> void:
 	if n.has_meta("chroma_applied"):
 		n.remove_meta("chroma_applied")
+		n.remove_meta("chroma_color")
 		if n is MeshInstance3D:
 			n.material_override = null
 		elif n is MultiMeshInstance3D:
@@ -818,7 +828,7 @@ func _build_cache_recursive(n: Node, root: Node, out: Dictionary) -> void:
 		var np := root.get_path_to(n)
 		var data := {
 			"preset": _preset.get_item_text(_preset.selected),
-			"color": _color_picker.color,
+			"color": n.get_meta("chroma_color", _color_picker.color),
 			"specular": _spec_spin.value,
 			"roughness": _rough_spin.value,
 			"opacity": _opacity_spin.value,
