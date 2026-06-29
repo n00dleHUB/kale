@@ -654,6 +654,23 @@ func _apply_node(n: Node, mat: Material) -> void:
 		actual_color = mat.albedo_color
 	n.set_meta("chroma_color", actual_color)
 
+	n.set_meta("chroma_params", {
+		preset = _preset.get_item_text(_preset.selected),
+		color = actual_color,
+		specular = _spec_spin.value,
+		roughness = _rough_spin.value,
+		opacity = _opacity_spin.value,
+		double_sided = _double_sided.button_pressed,
+		custom_texture = _custom_tex_path.text,
+		tiling_x = _tiling_x_spin.value,
+		tiling_y = _tiling_y_spin.value,
+		tiling_scale = _tiling_scale_spin.value,
+		uv_mode = _uv_mode.get_item_text(_uv_mode.selected).to_lower(),
+		uv_space = _uv_space.selected,
+		pattern = _pattern.get_item_text(_pattern.selected),
+		bomb = _fix_tiling.button_pressed,
+	})
+
 
 func _apply_to_node(n: Node) -> void:
 	_apply_node(n, _build_current_material())
@@ -798,6 +815,7 @@ func _clear_all() -> void:
 func _clear_node(n: Node) -> void:
 	n.remove_meta("chroma_applied")
 	n.remove_meta("chroma_color")
+	n.remove_meta("chroma_params")
 	if n is MeshInstance3D:
 		n.material_override = null
 	elif n is MultiMeshInstance3D:
@@ -859,21 +877,22 @@ func _save_cache() -> void:
 func _build_cache_recursive(n: Node, root: Node, out: Dictionary) -> void:
 	if (n is MeshInstance3D or n is MultiMeshInstance3D) and n.has_meta("chroma_applied"):
 		var np := root.get_path_to(n)
+		var p = n.get_meta("chroma_params", {})
 		var data := {
-			"preset": _preset.get_item_text(_preset.selected),
+			"preset": p.get("preset", _preset.get_item_text(_preset.selected)),
 			"color": n.get_meta("chroma_color", _color_picker.color),
-			"specular": _spec_spin.value,
-			"roughness": _rough_spin.value,
-			"opacity": _opacity_spin.value,
-			"double_sided": _double_sided.button_pressed,
-			"custom_texture": _custom_tex_path.text,
-			"tiling_x": _tiling_x_spin.value,
-			"tiling_y": _tiling_y_spin.value,
-			"tiling_scale": _tiling_scale_spin.value,
-			"uv_mode": _uv_mode.get_item_text(_uv_mode.selected).to_lower(),
-			"uv_space": _uv_space.selected,
-			"pattern": _pattern.get_item_text(_pattern.selected),
-			"bomb": _fix_tiling.button_pressed,
+			"specular": p.get("specular", _spec_spin.value),
+			"roughness": p.get("roughness", _rough_spin.value),
+			"opacity": p.get("opacity", _opacity_spin.value),
+			"double_sided": p.get("double_sided", _double_sided.button_pressed),
+			"custom_texture": p.get("custom_texture", _custom_tex_path.text),
+			"tiling_x": p.get("tiling_x", _tiling_x_spin.value),
+			"tiling_y": p.get("tiling_y", _tiling_y_spin.value),
+			"tiling_scale": p.get("tiling_scale", _tiling_scale_spin.value),
+			"uv_mode": p.get("uv_mode", _uv_mode.get_item_text(_uv_mode.selected).to_lower()),
+			"uv_space": p.get("uv_space", _uv_space.selected),
+			"pattern": p.get("pattern", _pattern.get_item_text(_pattern.selected)),
+			"bomb": p.get("bomb", _fix_tiling.button_pressed),
 		}
 		out[str(np)] = data
 	for c in n.get_children():
