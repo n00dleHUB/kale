@@ -48,6 +48,7 @@ var _pattern_row: HBoxContainer
 var _random_mode: OptionButton
 
 var _fix_tiling: CheckBox
+var _auto_restore: CheckBox
 var _status: Label
 var _scene_root: Node
 
@@ -220,6 +221,18 @@ func build_panel() -> Control:
 	open_cache.pressed.connect(_open_cache)
 	row3.add_child(open_cache)
 	_panel.add_child(row3)
+
+	var row4 := HBoxContainer.new()
+	_auto_restore = CheckBox.new()
+	_auto_restore.text = "Auto-restore"
+	_auto_restore.button_pressed = true
+	row4.add_child(_auto_restore)
+
+	var restore_btn := Button.new()
+	restore_btn.text = "Restore Materials"
+	restore_btn.pressed.connect(load_cache)
+	row4.add_child(restore_btn)
+	_panel.add_child(row4)
 
 	_file_dialog = FileDialog.new()
 	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -903,7 +916,8 @@ func load_cache() -> void:
 
 
 func on_editor_scene_changed(_root: Node) -> void:
-	load_cache()
+	if _auto_restore and _auto_restore.button_pressed:
+		load_cache()
 
 
 func _clear_cache() -> void:
