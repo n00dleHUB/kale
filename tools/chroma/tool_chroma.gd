@@ -134,7 +134,7 @@ func build_panel() -> Control:
 	_uv_mode = OptionButton.new()
 	_uv_mode.add_item("Projected")
 	_uv_mode.add_item("Triplanar")
-	_uv_mode.selected = 0
+	_uv_mode.selected = 1
 	_uv_mode.item_selected.connect(_on_uv_mode_changed)
 	mode_row.add_child(_uv_mode)
 	mode_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -153,7 +153,7 @@ func build_panel() -> Control:
 
 	_tiling_scale_spin = SpinBox.new()
 	_tiling_scale_slider = HSlider.new()
-	uv_body.add_child(_make_slider_row("Tiling Scale", _tiling_scale_spin, _tiling_scale_slider, 0.01, 4.0, 0.01, 1.0))
+	uv_body.add_child(_make_slider_row("Tiling Scale", _tiling_scale_spin, _tiling_scale_slider, 0.01, 4.0, 0.01, 0.3))
 	_tiling_scale_spin.max_value = 50.0
 	_tiling_scale_spin.value_changed.connect(_on_tiling_scale_changed)
 	_tiling_scale_slider.value_changed.connect(_on_tiling_scale_slider)
@@ -530,8 +530,9 @@ func _on_uv_mode_changed(_idx: int) -> void:
 	_tiling_x_row.visible = not is_triplanar
 	_tiling_y_row.visible = not is_triplanar
 
-	_tiling_scale_spin.value = 1.0
-	_tiling_scale_slider.value = 1.0
+	var tiling_default := 0.3 if is_triplanar else 1.0
+	_tiling_scale_spin.value = tiling_default
+	_tiling_scale_slider.value = tiling_default
 	_tiling_x_spin.value = 1.0
 	_tiling_x_slider.value = 1.0
 	_tiling_y_spin.value = 1.0
