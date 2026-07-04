@@ -1,6 +1,9 @@
 # Kale
 
-Godot 4 editor toolkit.
+Collecion of Godot 4.x tools.
+
+<img width="2551" height="1400" alt="image" src="https://github.com/user-attachments/assets/95fd1823-04ca-48be-9518-03d8eb79dbdc" />
+
 
 ## Tools
 - **Chroma** — Apply material color, texture, and pattern. Restores materials on Godot reboot.
