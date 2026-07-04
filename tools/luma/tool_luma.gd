@@ -284,18 +284,22 @@ func build_panel() -> Control:
 	_sdfgi = CheckBox.new()
 	_sdfgi.text = "SDFGI  —  Global illumination"
 	_sdfgi.toggled.connect(func(_t: bool): _on_changed())
+	_sdfgi.button_pressed = true
 	gia_body.add_child(_sdfgi)
 	_ssao = CheckBox.new()
 	_ssao.text = "SSAO  —  Contact shadows"
 	_ssao.toggled.connect(func(_t: bool): _on_changed())
+	_ssao.button_pressed = true
 	gia_body.add_child(_ssao)
 	_ssil = CheckBox.new()
 	_ssil.text = "SSIL  —  Indirect bounce"
 	_ssil.toggled.connect(func(_t: bool): _on_changed())
+	_ssil.button_pressed = true
 	gia_body.add_child(_ssil)
 	_ssr = CheckBox.new()
 	_ssr.text = "SSR  —  Reflections"
 	_ssr.toggled.connect(func(_t: bool): _on_changed())
+	_ssr.button_pressed = true
 	gia_body.add_child(_ssr)
 	_panel.add_child(_make_section("GI & AO", true, gia_body))
 
@@ -384,10 +388,6 @@ func _on_preset_changed(idx: int) -> void:
 	_sun_color.color = data.get("sun_color", Color(1, 0.96, 0.9))
 	_sun_energy_slider.value = data.get("sun_energy", 1.0)
 	_sun_energy_spin.value = data.get("sun_energy", 1.0)
-	_sdfgi.button_pressed = data.get("sdfgi", false)
-	_ssao.button_pressed = data.get("ssao", false)
-	_ssil.button_pressed = data.get("ssil", false)
-	_ssr.button_pressed = data.get("ssr", false)
 	_setting_slider = false
 	_live_update()
 
@@ -444,6 +444,10 @@ func _live_update() -> void:
 				var env := Environment.new()
 				env.resource_local_to_scene = true
 				we.environment = env
+			if we and we.environment:
+				we.environment.sky = null
+				we.environment.background_mode = Environment.BG_CLEAR_COLOR
+			_applied_hdri = ""
 		elif we:
 			_applied_hdri = ""
 			we.queue_free()
