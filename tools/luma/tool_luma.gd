@@ -465,4 +465,6 @@ func _live_update() -> void:
 
 
 func on_editor_scene_changed(_root: Node) -> void:
+	if not _sdfgi:
+		return
 	_live_update()
