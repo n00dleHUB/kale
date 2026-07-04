@@ -194,9 +194,10 @@ func _open_texture_dialog(path_edit: LineEdit) -> void:
 	fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	fd.add_filter("*.jpg,*.png,*.webp,*.exr,*.hdr", "Textures")
 	fd.access = FileDialog.ACCESS_FILESYSTEM
+	fd.use_native_dialog = true
 	fd.file_selected.connect(func(p): path_edit.text = p; _on_param_changed())
-	fd.popup_centered(Vector2i(600, 400))
 	_panel.add_child(fd)
+	fd.popup_centered(Vector2i(600, 400))
 
 
 func _make_section(title: String, collapsed: bool, body: VBoxContainer) -> VBoxContainer:
