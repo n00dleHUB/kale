@@ -61,10 +61,14 @@ func build_panel() -> Control:
 
 	_map_dropdown = OptionButton.new()
 	_map_dropdown.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for name in Presets.get_names():
-		_map_dropdown.add_item(name)
+	var names := Presets.get_names()
+	for i in names.size():
+		_map_dropdown.add_item(names[i])
+		if names[i] == "MP_Dumbo":
+			_map_dropdown.select(i)
 	_map_dropdown.item_selected.connect(_on_map_selected)
 	_panel.add_child(_map_dropdown)
+	_on_map_selected(_map_dropdown.selected)
 
 	_sub_row = HBoxContainer.new()
 	_sub_dropdown = OptionButton.new()
