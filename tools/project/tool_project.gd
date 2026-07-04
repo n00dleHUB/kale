@@ -165,7 +165,6 @@ func build_panel() -> Control:
 	dist_body.add_child(_make_slider_row("Length:", _df_len_spin, _df_len_slider, 0.0, 1000.0, 0.1, 10.0))
 	_df_len_spin.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
 	_df_len_slider.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
-	_df_len_slider.value_changed.connect(_on_df_len_slider)
 	_panel.add_child(_make_section("Distance Fade", true, dist_body))
 
 	return _panel
