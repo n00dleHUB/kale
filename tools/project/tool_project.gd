@@ -74,8 +74,6 @@ func build_panel() -> Control:
 	_sub_row.visible = false
 	_panel.add_child(_sub_row)
 
-	_on_map_selected(_map_dropdown.selected)
-
 	var btn_row := HBoxContainer.new()
 	_spawn_btn = Button.new()
 	_spawn_btn.text = "Spawn Decal"
@@ -167,6 +165,8 @@ func build_panel() -> Control:
 	_df_len_spin.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
 	_df_len_slider.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
 	_panel.add_child(_make_section("Distance Fade", true, dist_body))
+
+	_on_map_selected(_map_dropdown.selected)
 
 	return _panel
 
