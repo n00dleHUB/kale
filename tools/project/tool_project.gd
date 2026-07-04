@@ -14,6 +14,10 @@ var _size_x: SpinBox
 var _size_y: SpinBox
 var _size_z: SpinBox
 
+var _pos_x: SpinBox
+var _pos_y: SpinBox
+var _pos_z: SpinBox
+
 var _tex_albedo_path: LineEdit
 var _tex_normal_path: LineEdit
 var _tex_orm_path: LineEdit
@@ -96,6 +100,19 @@ func build_panel() -> Control:
 	_size_z = SpinBox.new()
 	_size_z.max_value = 99999
 	decal_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
+
+	decal_body.add_child(HSeparator.new())
+
+	_pos_x = SpinBox.new()
+	_pos_x.max_value = 99999
+	_pos_x.min_value = -99999
+	_pos_y = SpinBox.new()
+	_pos_y.max_value = 99999
+	_pos_y.min_value = -99999
+	_pos_z = SpinBox.new()
+	_pos_z.max_value = 99999
+	_pos_z.min_value = -99999
+	decal_body.add_child(_make_vec3_row("Pos X/Y/Z:", _pos_x, _pos_y, _pos_z))
 
 	decal_body.add_child(HSeparator.new())
 
@@ -311,6 +328,10 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_size_y.value = data.get("size", Vector3.ONE).y
 	_size_z.value = data.get("size", Vector3.ONE).z
 
+	_pos_x.value = data.get("pos", Vector3.ZERO).x
+	_pos_y.value = data.get("pos", Vector3.ZERO).y
+	_pos_z.value = data.get("pos", Vector3.ZERO).z
+
 	_tex_albedo_path.text = data.get("tex", "")
 	_tex_normal_path.text = ""
 	_tex_orm_path.text = ""
@@ -328,6 +349,9 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 func _read_decal_to_ui(decal: Decal) -> void:
 	if not decal or not is_instance_valid(decal):
 		return
+	_pos_x.value = decal.position.x
+	_pos_y.value = decal.position.y
+	_pos_z.value = decal.position.z
 	_size_x.value = decal.size.x
 	_size_y.value = decal.size.y
 	_size_z.value = decal.size.z
@@ -490,6 +514,7 @@ func _update_decal_from_ui(decal: Decal) -> void:
 	if not decal or not is_instance_valid(decal):
 		return
 
+	decal.position = Vector3(_pos_x.value, _pos_y.value, _pos_z.value)
 	decal.size = Vector3(_size_x.value, _size_y.value, _size_z.value)
 
 	decal.texture_albedo = _load_texture_or_null(_tex_albedo_path.text)
