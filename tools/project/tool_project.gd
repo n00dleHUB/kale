@@ -167,7 +167,7 @@ func _build_texture_row(label: String) -> HBoxContainer:
 	path_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var load_btn := Button.new()
-	load_btn.text = "Load"
+	load_btn.text = "Browse"
 	load_btn.pressed.connect(_open_texture_dialog.bind(path_edit))
 	var clear_btn := Button.new()
 	clear_btn.text = "X"
