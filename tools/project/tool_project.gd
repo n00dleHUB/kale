@@ -32,12 +32,6 @@ var _lf_spin: SpinBox
 var _lf_slider: HSlider
 var _modulate: ColorPickerButton
 
-var _df_enabled: CheckBox
-var _df_begin_spin: SpinBox
-var _df_begin_slider: HSlider
-var _df_len_spin: SpinBox
-var _df_len_slider: HSlider
-
 var _sat_spin: SpinBox
 var _sat_slider: HSlider
 var _hue_spin: SpinBox
@@ -97,41 +91,35 @@ func build_panel() -> Control:
 	btn_row.add_child(_remove_btn)
 	_panel.add_child(btn_row)
 
-	# ── Decal Parameters ──
-	var decal_lbl := Label.new()
-	decal_lbl.text = "Decal Parameters"
-	decal_lbl.add_theme_font_size_override("font_size", 13)
-	_panel.add_child(decal_lbl)
+	# ── Decal Parameters (collapsible) ──
+	var decal_body := VBoxContainer.new()
 
-	# Size
 	_size_x = SpinBox.new()
 	_size_x.max_value = 99999
 	_size_y = SpinBox.new()
 	_size_y.max_value = 99999
 	_size_z = SpinBox.new()
 	_size_z.max_value = 99999
-	_panel.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
+	decal_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
 
-	_panel.add_child(HSeparator.new())
+	decal_body.add_child(HSeparator.new())
 
-	# Textures
-	_panel.add_child(_build_texture_row("Albedo:"))
-	_panel.add_child(_build_texture_row("Normal:"))
-	_panel.add_child(_build_texture_row("ORM:"))
-	_panel.add_child(_build_texture_row("Emission:"))
+	decal_body.add_child(_build_texture_row("Albedo:"))
+	decal_body.add_child(_build_texture_row("Normal:"))
+	decal_body.add_child(_build_texture_row("ORM:"))
+	decal_body.add_child(_build_texture_row("Emission:"))
 
-	_panel.add_child(HSeparator.new())
+	decal_body.add_child(HSeparator.new())
 
-	# Parameters
 	_ee_spin = SpinBox.new()
 	_ee_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Emission Energy:", _ee_spin, _ee_slider, 0.0, 100.0, 0.01, 0.0))
+	decal_body.add_child(_make_slider_row("Emission Energy:", _ee_spin, _ee_slider, 0.0, 100.0, 0.01, 0.0))
 	_ee_spin.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
 	_ee_slider.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
 
 	_am_spin = SpinBox.new()
 	_am_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Albedo Mix:", _am_spin, _am_slider, 0.0, 1.0, 0.01, 1.0))
+	decal_body.add_child(_make_slider_row("Albedo Mix:", _am_spin, _am_slider, 0.0, 1.0, 0.01, 1.0))
 	_am_spin.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
 	_am_slider.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
 
@@ -144,48 +132,29 @@ func build_panel() -> Control:
 	mod_lbl.text = "Modulate:"
 	mod_row.add_child(mod_lbl)
 	mod_row.add_child(_modulate)
-	_panel.add_child(mod_row)
+	decal_body.add_child(mod_row)
 
 	_nf_spin = SpinBox.new()
 	_nf_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Normal Fade:", _nf_spin, _nf_slider, 0.0, 1.0, 0.001, 0.0))
+	decal_body.add_child(_make_slider_row("Normal Fade:", _nf_spin, _nf_slider, 0.0, 1.0, 0.001, 0.0))
 	_nf_spin.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
 	_nf_slider.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
 
-	_panel.add_child(HSeparator.new())
+	decal_body.add_child(HSeparator.new())
 
-	# Vertical Fade
 	_uf_spin = SpinBox.new()
 	_uf_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Upper Fade:", _uf_spin, _uf_slider, 0.0, 10.0, 0.001, 0.3))
+	decal_body.add_child(_make_slider_row("Upper Fade:", _uf_spin, _uf_slider, 0.0, 10.0, 0.001, 0.3))
 	_uf_spin.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
 	_uf_slider.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
 
 	_lf_spin = SpinBox.new()
 	_lf_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Lower Fade:", _lf_spin, _lf_slider, 0.0, 10.0, 0.001, 0.3))
+	decal_body.add_child(_make_slider_row("Lower Fade:", _lf_spin, _lf_slider, 0.0, 10.0, 0.001, 0.3))
 	_lf_spin.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 
-	_panel.add_child(HSeparator.new())
-
-	# Distance Fade
-	_df_enabled = CheckBox.new()
-	_df_enabled.text = "Enable"
-	_df_enabled.toggled.connect(func(_t): _on_param_changed())
-	_panel.add_child(_df_enabled)
-
-	_df_begin_spin = SpinBox.new()
-	_df_begin_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Begin:", _df_begin_spin, _df_begin_slider, 0.0, 1000.0, 0.1, 10.0))
-	_df_begin_spin.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
-	_df_begin_slider.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
-
-	_df_len_spin = SpinBox.new()
-	_df_len_slider = HSlider.new()
-	_panel.add_child(_make_slider_row("Length:", _df_len_spin, _df_len_slider, 0.0, 1000.0, 0.1, 10.0))
-	_df_len_spin.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
-	_df_len_slider.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
+	_panel.add_child(_make_section("Decal Parameters", true, decal_body))
 
 	# ── Shader Effects ──
 	var fx_body := VBoxContainer.new()
@@ -390,9 +359,6 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_set_spin_slider(_nf_spin, _nf_slider, data.get("nf", 0.0))
 	_set_spin_slider(_uf_spin, _uf_slider, data.get("uf", 0.3))
 	_set_spin_slider(_lf_spin, _lf_slider, data.get("lf", 0.3))
-	_set_spin_slider(_df_begin_spin, _df_begin_slider, data.get("dfb", 10.0))
-	_set_spin_slider(_df_len_spin, _df_len_slider, data.get("dfl", 10.0))
-	_df_enabled.button_pressed = data.get("dfe", false)
 	_set_spin_slider(_sat_spin, _sat_slider, 1.0)
 	_set_spin_slider(_hue_spin, _hue_slider, 0.0)
 	_set_spin_slider(_sharp_spin, _sharp_slider, 0.0)
@@ -414,10 +380,6 @@ func _read_decal_to_ui(decal: Decal) -> void:
 	_set_spin_slider(_nf_spin, _nf_slider, decal.normal_fade)
 	_set_spin_slider(_uf_spin, _uf_slider, decal.upper_fade)
 	_set_spin_slider(_lf_spin, _lf_slider, decal.lower_fade)
-	_set_spin_slider(_df_begin_spin, _df_begin_slider, decal.distance_fade_begin)
-	_set_spin_slider(_df_len_spin, _df_len_slider, decal.distance_fade_length)
-	_df_enabled.button_pressed = decal.distance_fade_enabled
-
 	# Try to read shader values from existing material_override
 	var mat_ov := decal.material_override as ShaderMaterial
 	if mat_ov:
@@ -539,16 +501,12 @@ func _update_decal_from_ui(decal: Decal) -> void:
 	decal.normal_fade = _nf_spin.value
 	decal.upper_fade = _uf_spin.value
 	decal.lower_fade = _lf_spin.value
-	decal.distance_fade_enabled = _df_enabled.button_pressed
-	decal.distance_fade_begin = _df_begin_spin.value
-	decal.distance_fade_length = _df_len_spin.value
-
 	var sat := _sat_spin.value
 	var hue := _hue_spin.value
 	var sharp := _sharp_spin.value
 	var bright := _bright_spin.value
 	var contrast := _contrast_spin.value
-	var is_neutral := abs(sat - 1.0) < 0.001 and abs(hue) < 0.001 and abs(sharp) < 0.001 and abs(bright - 1.0) < 0.001 and abs(contrast - 1.0) < 0.001
+	var is_neutral: bool = abs(sat - 1.0) < 0.001 and abs(hue) < 0.001 and abs(sharp) < 0.001 and abs(bright - 1.0) < 0.001 and abs(contrast - 1.0) < 0.001
 
 	if is_neutral:
 		decal.material_override = null
