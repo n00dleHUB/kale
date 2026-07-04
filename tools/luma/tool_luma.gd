@@ -458,3 +458,7 @@ func _live_update() -> void:
 		_sun_color.color,
 		_sun_energy_spin.value,
 	)
+
+
+func on_editor_scene_changed(_root: Node) -> void:
+	_live_update()

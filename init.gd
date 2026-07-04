@@ -10,6 +10,7 @@ func _enter_tree():
 	_dock.name = "Kale"
 	add_control_to_dock(DOCK_SLOT_RIGHT_UL, _dock)
 	scene_changed.connect(_on_scene_changed)
+	_on_scene_changed(EditorInterface.get_edited_scene_root())
 
 
 func _exit_tree():

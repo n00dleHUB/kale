@@ -418,6 +418,18 @@ func _on_select_in_inspector() -> void:
 		EditorInterface.get_selection().clear()
 		EditorInterface.get_selection().add_node(_selected_decal)
 		EditorInterface.edit_node(_selected_decal)
+		call_deferred("_focus_inspector_dock")
+
+
+func _focus_inspector_dock() -> void:
+	var editor := EditorInterface.get_base_control()
+	if not editor:
+		return
+	for tc in editor.find_children("*", "TabContainer", true, false):
+		for i in tc.get_tab_count():
+			if tc.get_tab_title(i) == "Inspector":
+				tc.current_tab = i
+				return
 
 
 func _on_param_changed(_v: float = 0.0) -> void:
