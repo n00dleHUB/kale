@@ -110,10 +110,10 @@ func build_panel() -> Control:
 	_panel.add_child(_make_section("Position Offset", true, pos_body))
 
 	var tex_body := VBoxContainer.new()
-	tex_body.add_child(_build_texture_row("Albedo:", "_tex_albedo_thumb", "_tex_albedo_path", "_on_load_albedo", "_on_clear_albedo"))
-	tex_body.add_child(_build_texture_row("Normal:", "_tex_normal_thumb", "_tex_normal_path", "_on_load_normal", "_on_clear_normal"))
-	tex_body.add_child(_build_texture_row("ORM:", "_tex_orm_thumb", "_tex_orm_path", "_on_load_orm", "_on_clear_orm"))
-	tex_body.add_child(_build_texture_row("Emission:", "_tex_emission_thumb", "_tex_emission_path", "_on_load_emission", "_on_clear_emission"))
+	tex_body.add_child(_build_texture_row("Albedo:"))
+	tex_body.add_child(_build_texture_row("Normal:"))
+	tex_body.add_child(_build_texture_row("ORM:"))
+	tex_body.add_child(_build_texture_row("Emission:"))
 	_panel.add_child(_make_section("Textures", true, tex_body))
 
 	var param_body := VBoxContainer.new()
@@ -182,54 +182,58 @@ func build_panel() -> Control:
 	return _panel
 
 
-func _build_texture_row(label: String, _thumb_var: String, _path_var: String, load_fn: String, clear_fn: String) -> HBoxContainer:
+func _build_texture_row(label: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	var lbl := Label.new()
 	lbl.text = label
 	lbl.custom_minimum_size = Vector2(60, 0)
 	row.add_child(lbl)
 
-	var thumb := TextureRect.new()
-	thumb.custom_minimum_size = Vector2(48, 48)
-	thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	thumb.modulate = Color(1, 1, 1, 0.3)
+	var preview := Button.new()
+	preview.custom_minimum_size = Vector2(48, 48)
+	preview.flat = true
+	preview.tooltip_text = "Click to load texture"
 
 	var load_btn := Button.new()
-	load_btn.text = "Load"
-	load_btn.custom_minimum_size = Vector2(36, 22)
+	load_btn.text = "L"
+	load_btn.tooltip_text = "Load texture"
+	load_btn.custom_minimum_size = Vector2(24, 22)
 	var clear_btn := Button.new()
 	clear_btn.text = "X"
-	clear_btn.custom_minimum_size = Vector2(22, 22)
+	clear_btn.tooltip_text = "Clear"
+	clear_btn.custom_minimum_size = Vector2(24, 22)
 
 	match label:
 		"Albedo:":
-			_tex_albedo_thumb = thumb
+			_tex_albedo_thumb = preview
+			preview.pressed.connect(_on_load_albedo)
 			load_btn.pressed.connect(_on_load_albedo)
 			clear_btn.pressed.connect(_on_clear_albedo)
 		"Normal:":
-			_tex_normal_thumb = thumb
+			_tex_normal_thumb = preview
+			preview.pressed.connect(_on_load_normal)
 			load_btn.pressed.connect(_on_load_normal)
 			clear_btn.pressed.connect(_on_clear_normal)
 		"ORM:":
-			_tex_orm_thumb = thumb
+			_tex_orm_thumb = preview
+			preview.pressed.connect(_on_load_orm)
 			load_btn.pressed.connect(_on_load_orm)
 			clear_btn.pressed.connect(_on_clear_orm)
 		"Emission:":
-			_tex_emission_thumb = thumb
+			_tex_emission_thumb = preview
+			preview.pressed.connect(_on_load_emission)
 			load_btn.pressed.connect(_on_load_emission)
 			clear_btn.pressed.connect(_on_clear_emission)
 
-	row.add_child(thumb)
-	var btn_col := VBoxContainer.new()
-	btn_col.add_child(load_btn)
-	btn_col.add_child(clear_btn)
-	row.add_child(btn_col)
+	row.add_child(preview)
+	row.add_child(load_btn)
+	row.add_child(clear_btn)
 	return row
 
 
-func _set_texture_thumb(thumb: TextureRect, path: String, value: Texture2D) -> void:
-	thumb.texture = value
-	thumb.modulate = Color(1, 1, 1, 0.3 if not value else 1.0)
+func _set_texture_thumb(thumb: Button, path: String, value: Texture2D) -> void:
+	thumb.icon = value
+	thumb.tooltip_text = path if not path.is_empty() else "Click to load texture"
 
 
 func _set_texture(varname: String, path: String) -> void:
