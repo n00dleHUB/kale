@@ -17,14 +17,10 @@ var _size_x: SpinBox
 var _size_y: SpinBox
 var _size_z: SpinBox
 
-var _tex_albedo_thumb: Button
-var _tex_albedo_path: String
-var _tex_normal_thumb: Button
-var _tex_normal_path: String
-var _tex_orm_thumb: Button
-var _tex_orm_path: String
-var _tex_emission_thumb: Button
-var _tex_emission_path: String
+var _tex_albedo_path: LineEdit
+var _tex_normal_path: LineEdit
+var _tex_orm_path: LineEdit
+var _tex_emission_path: LineEdit
 
 var _ee_spin: SpinBox
 var _ee_slider: HSlider
@@ -182,121 +178,47 @@ func build_panel() -> Control:
 	return _panel
 
 
-func _build_texture_row(label: String) -> HBoxContainer:
+func _build_texture_row(label: String, path_var: String, load_fn: String, clear_fn: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	var lbl := Label.new()
 	lbl.text = label
 	lbl.custom_minimum_size = Vector2(60, 0)
 	row.add_child(lbl)
 
-	var preview := Button.new()
-	preview.custom_minimum_size = Vector2(48, 48)
-	preview.flat = true
-	preview.tooltip_text = "Click to load texture"
+	var path_edit := LineEdit.new()
+	path_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var load_btn := Button.new()
-	load_btn.text = "L"
-	load_btn.tooltip_text = "Load texture"
-	load_btn.custom_minimum_size = Vector2(24, 22)
+	load_btn.text = "Load"
+	load_btn.pressed.connect(_open_texture_dialog.bind(path_edit))
 	var clear_btn := Button.new()
 	clear_btn.text = "X"
-	clear_btn.tooltip_text = "Clear"
-	clear_btn.custom_minimum_size = Vector2(24, 22)
+	clear_btn.pressed.connect(func(): path_edit.text = ""; _on_param_changed())
 
 	match label:
 		"Albedo:":
-			_tex_albedo_thumb = preview
-			preview.pressed.connect(_on_load_albedo)
-			load_btn.pressed.connect(_on_load_albedo)
-			clear_btn.pressed.connect(_on_clear_albedo)
+			_tex_albedo_path = path_edit
 		"Normal:":
-			_tex_normal_thumb = preview
-			preview.pressed.connect(_on_load_normal)
-			load_btn.pressed.connect(_on_load_normal)
-			clear_btn.pressed.connect(_on_clear_normal)
+			_tex_normal_path = path_edit
 		"ORM:":
-			_tex_orm_thumb = preview
-			preview.pressed.connect(_on_load_orm)
-			load_btn.pressed.connect(_on_load_orm)
-			clear_btn.pressed.connect(_on_clear_orm)
+			_tex_orm_path = path_edit
 		"Emission:":
-			_tex_emission_thumb = preview
-			preview.pressed.connect(_on_load_emission)
-			load_btn.pressed.connect(_on_load_emission)
-			clear_btn.pressed.connect(_on_clear_emission)
+			_tex_emission_path = path_edit
 
-	row.add_child(preview)
+	row.add_child(path_edit)
 	row.add_child(load_btn)
 	row.add_child(clear_btn)
 	return row
 
 
-func _set_texture_thumb(thumb: Button, path: String, value: Texture2D) -> void:
-	thumb.icon = value
-	thumb.tooltip_text = path if not path.is_empty() else "Click to load texture"
-
-
-func _set_texture(varname: String, path: String) -> void:
-	match varname:
-		"_tex_albedo_path": _tex_albedo_path = path
-		"_tex_normal_path": _tex_normal_path = path
-		"_tex_orm_path": _tex_orm_path = path
-		"_tex_emission_path": _tex_emission_path = path
-
-	var tex: Texture2D = null
-	if not path.is_empty() and ResourceLoader.exists(path):
-		tex = load(path) as Texture2D
-
-	match varname:
-		"_tex_albedo_path": _set_texture_thumb(_tex_albedo_thumb, path, tex)
-		"_tex_normal_path": _set_texture_thumb(_tex_normal_thumb, path, tex)
-		"_tex_orm_path": _set_texture_thumb(_tex_orm_thumb, path, tex)
-		"_tex_emission_path": _set_texture_thumb(_tex_emission_thumb, path, tex)
-
-	if _selected_decal and is_instance_valid(_selected_decal):
-		_update_decal_from_ui(_selected_decal)
-
-
-func _open_texture_dialog(callback: Callable) -> void:
+func _open_texture_dialog(path_edit: LineEdit) -> void:
 	var fd := FileDialog.new()
 	fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	fd.add_filter("*.jpg,*.png,*.webp,*.exr,*.hdr", "Textures")
 	fd.access = FileDialog.ACCESS_FILESYSTEM
-	fd.file_selected.connect(callback)
+	fd.file_selected.connect(func(p): path_edit.text = p; _on_param_changed())
 	fd.popup_centered(Vector2i(600, 400))
 	_panel.add_child(fd)
-
-
-func _on_load_albedo() -> void:
-	_open_texture_dialog(func(p): _set_texture("_tex_albedo_path", p))
-
-
-func _on_clear_albedo() -> void:
-	_set_texture("_tex_albedo_path", "")
-
-
-func _on_load_normal() -> void:
-	_open_texture_dialog(func(p): _set_texture("_tex_normal_path", p))
-
-
-func _on_clear_normal() -> void:
-	_set_texture("_tex_normal_path", "")
-
-
-func _on_load_orm() -> void:
-	_open_texture_dialog(func(p): _set_texture("_tex_orm_path", p))
-
-
-func _on_clear_orm() -> void:
-	_set_texture("_tex_orm_path", "")
-
-
-func _on_load_emission() -> void:
-	_open_texture_dialog(func(p): _set_texture("_tex_emission_path", p))
-
-
-func _on_clear_emission() -> void:
-	_set_texture("_tex_emission_path", "")
 
 
 func _make_section(title: String, collapsed: bool, body: VBoxContainer) -> VBoxContainer:
@@ -513,10 +435,10 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_size_z.value = data.get("size", Vector3.ONE).z
 	_pos_x.value = 0.0; _pos_y.value = 0.0; _pos_z.value = 0.0
 
-	_set_texture("_tex_albedo_path", data.get("tex", ""))
-	_set_texture("_tex_normal_path", "")
-	_set_texture("_tex_orm_path", "")
-	_set_texture("_tex_emission_path", data.get("tex", ""))
+	_tex_albedo_path.text = data.get("tex", "")
+	_tex_normal_path.text = ""
+	_tex_orm_path.text = ""
+	_tex_emission_path.text = data.get("tex", "")
 
 	_setting_slider = true
 	_set_spin_slider(_ee_spin, _ee_slider, data.get("ee", 0.0))
@@ -647,10 +569,10 @@ func _update_decal_from_ui(decal: Decal) -> void:
 
 	decal.size = Vector3(_size_x.value, _size_y.value, _size_z.value)
 
-	decal.texture_albedo = _load_texture_or_null(_tex_albedo_path)
-	decal.texture_normal = _load_texture_or_null(_tex_normal_path)
-	decal.texture_orm = _load_texture_or_null(_tex_orm_path)
-	decal.texture_emission = _load_texture_or_null(_tex_emission_path)
+	decal.texture_albedo = _load_texture_or_null(_tex_albedo_path.text)
+	decal.texture_normal = _load_texture_or_null(_tex_normal_path.text)
+	decal.texture_orm = _load_texture_or_null(_tex_orm_path.text)
+	decal.texture_emission = _load_texture_or_null(_tex_emission_path.text)
 
 	decal.emission_energy = _ee_spin.value
 	decal.albedo_mix = _am_spin.value
