@@ -76,7 +76,7 @@ func build_panel() -> Control:
 
 	var hdr_tip := Label.new()
 	hdr_tip.text = "Get more free HDRIs: https://polyhaven.com/hdris"
-	hdr_tip.font_size = 10
+	hdr_tip.add_theme_font_size_override("font_size", 10)
 	_panel.add_child(hdr_tip)
 
 	# Sky section

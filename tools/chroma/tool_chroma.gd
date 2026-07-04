@@ -386,7 +386,7 @@ func _build_texture_row() -> VBoxContainer:
 
 	var tip := Label.new()
 	tip.text = "Get more free textures: https://polyhaven.com/textures"
-	tip.font_size = 10
+	tip.add_theme_font_size_override("font_size", 10)
 	col.add_child(tip)
 
 	return col
