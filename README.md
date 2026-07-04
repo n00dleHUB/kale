@@ -18,13 +18,13 @@ Collecion of Godot 4.x tools.
 
 Installation:
 - Clone or download the repo into the folder "godotporject/addons/".
-- If you downloaded zip, make sure you unzip it.
+- If you downloaded a zip file, make sure you unzip it.
 - Enable the plugin in Godot>AssetLib>Plugins.
-- 
+  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 General info:
-- Sample textures included in the addon, bu you can get more at polyheaven.com/textures.
+- Sample textures are included in the addon, but you can get more at polyheaven.com/textures.
 - For the map project tool to work you must have Portal SDK 1.3.3 or later.
   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
