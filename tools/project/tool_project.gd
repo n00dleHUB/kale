@@ -498,10 +498,22 @@ func _on_add_target_row() -> void:
 
 
 func _on_remove_target_row(idx: int) -> void:
-	if _target_paths.size() <= 1:
-		return
 	_target_paths.remove_at(idx)
 	_refresh_target_rows()
+
+
+func _apply_layers_to_gi(inst: GeometryInstance3D, layer_mask: int) -> void:
+	var orig: int = inst.get_meta("_kale_orig_layers", -1)
+	if orig == -1:
+		inst.set_meta("_kale_orig_layers", inst.layers)
+	inst.layers |= layer_mask
+
+
+func _restore_layers_from_gi(inst: GeometryInstance3D) -> void:
+	if not inst.has_meta("_kale_orig_layers"):
+		return
+	inst.layers = inst.get_meta("_kale_orig_layers")
+	inst.remove_meta("_kale_orig_layers")
 
 
 func _assign_target_layers(root: Node) -> void:
@@ -510,14 +522,10 @@ func _assign_target_layers(root: Node) -> void:
 		var target := root.get_node_or_null(path)
 		if not target:
 			continue
+		if target is GeometryInstance3D:
+			_apply_layers_to_gi(target, layer_mask)
 		for gi in target.find_children("*", "GeometryInstance3D", true, false):
-			var inst := gi as GeometryInstance3D
-			if not inst:
-				continue
-			var orig: int = inst.get_meta("_kale_orig_layers", -1)
-			if orig == -1:
-				inst.set_meta("_kale_orig_layers", inst.layers)
-			inst.layers |= layer_mask
+			_apply_layers_to_gi(gi, layer_mask)
 
 
 func _restore_target_layers(root: Node) -> void:
@@ -525,12 +533,10 @@ func _restore_target_layers(root: Node) -> void:
 		var target := root.get_node_or_null(path)
 		if not target:
 			continue
+		if target is GeometryInstance3D:
+			_restore_layers_from_gi(target)
 		for gi in target.find_children("*", "GeometryInstance3D", true, false):
-			var inst := gi as GeometryInstance3D
-			if not inst or not inst.has_meta("_kale_orig_layers"):
-				continue
-			inst.layers = inst.get_meta("_kale_orig_layers")
-			inst.remove_meta("_kale_orig_layers")
+			_restore_layers_from_gi(gi)
 
 
 func _on_select_in_inspector() -> void:
