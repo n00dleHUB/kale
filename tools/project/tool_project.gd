@@ -448,14 +448,16 @@ func _refresh_target_rows() -> void:
 		var row := HBoxContainer.new()
 		var path_edit := LineEdit.new()
 		path_edit.text = str(_target_paths[i])
-		path_edit.editable = false
+		path_edit.editable = true
 		path_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		path_edit.placeholder_text = "Select a node in the scene tree"
 		path_edit.tooltip_text = "Select a node in the scene tree, then click Select"
+		path_edit.text_changed.connect(func(txt): _target_paths[i] = NodePath(txt))
 		row.add_child(path_edit)
 
 		var sel_btn := Button.new()
 		sel_btn.text = "Select"
+		sel_btn.tooltip_text = "Select node(s) in the scene tree first"
 		sel_btn.pressed.connect(_on_select_target.bind(path_edit, i))
 		row.add_child(sel_btn)
 
@@ -467,17 +469,27 @@ func _refresh_target_rows() -> void:
 		_targets_container.add_child(row)
 
 
-func _on_select_target(path_edit: LineEdit, idx: int) -> void:
+func _on_select_target(_path_edit: LineEdit, idx: int) -> void:
 	var selected := EditorInterface.get_selection().get_selected_nodes()
 	if selected.is_empty():
 		return
-	var node := selected[0]
 	var root := EditorInterface.get_edited_scene_root()
-	if not root or not root.is_ancestor_of(node):
+	if not root:
 		return
-	var path := root.get_path_to(node)
-	_target_paths[idx] = path
-	path_edit.text = str(path)
+	var added := false
+	for node in selected:
+		if not root.is_ancestor_of(node):
+			continue
+		var path := root.get_path_to(node)
+		if path in _target_paths:
+			continue
+		if not added and _target_paths[idx].is_empty():
+			_target_paths[idx] = path
+		else:
+			_target_paths.append(path)
+		added = true
+	if added:
+		_refresh_target_rows()
 
 
 func _on_add_target_row() -> void:
