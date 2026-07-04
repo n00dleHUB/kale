@@ -191,7 +191,7 @@ func _build_texture_row(label: String, _thumb_var: String, _path_var: String, lo
 
 	var thumb := TextureRect.new()
 	thumb.custom_minimum_size = Vector2(48, 48)
-	thumb.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	thumb.expand_mode = TextureRect.EXPAND_MODE_FIT_WIDTH_PROPORTIONAL
 	thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	thumb.modulate = Color(1, 1, 1, 0.3)
 
@@ -618,9 +618,11 @@ func _spawn_single_decal(root: Node, name: String, data, map_name: String) -> vo
 
 
 func _on_remove() -> void:
-	for d in _decal_nodes:
-		if is_instance_valid(d):
-			d.queue_free()
+	var root := EditorInterface.get_edited_scene_root()
+	if root:
+		for child in root.find_children("*", "Decal", true, false):
+			if child.has_meta("map_project"):
+				child.queue_free()
 	_decal_nodes = []
 	_selected_decal = null
 
