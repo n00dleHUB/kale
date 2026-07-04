@@ -38,8 +38,7 @@ var _preset_data = {}
 var _multi_data: Array = []
 
 const DECAL_LAYER_BIT := 1
-var _target_paths: Array[NodePath] = [NodePath("Static")]
-var _targets_container: VBoxContainer
+const DECAL_TARGET_PATH := NodePath("Static")
 
 
 func get_tool_name() -> String:
@@ -151,26 +150,6 @@ func build_panel() -> Control:
 	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 
 	_panel.add_child(_make_section("Decal Parameters", true, decal_body))
-
-	# ── Projection Targets (collapsible) ──
-	var tgt_body := VBoxContainer.new()
-
-	var tgt_info := Label.new()
-	tgt_info.text = "Select nodes in the scene tree, then click Select"
-	tgt_info.add_theme_font_size_override("font_size", 10)
-	tgt_body.add_child(tgt_info)
-
-	_targets_container = VBoxContainer.new()
-	tgt_body.add_child(_targets_container)
-
-	var tgt_add := Button.new()
-	tgt_add.text = "Add Target"
-	tgt_add.pressed.connect(_on_add_target_row)
-	tgt_body.add_child(tgt_add)
-
-	_panel.add_child(_make_section("Projection Targets", true, tgt_body))
-
-	_refresh_target_rows()
 
 	_on_map_selected(_map_dropdown.selected)
 
@@ -441,67 +420,6 @@ func _on_remove() -> void:
 	_selected_decal = null
 
 
-func _refresh_target_rows() -> void:
-	for c in _targets_container.get_children():
-		c.queue_free()
-	for i in _target_paths.size():
-		var row := HBoxContainer.new()
-		var path_edit := LineEdit.new()
-		path_edit.text = str(_target_paths[i])
-		path_edit.editable = true
-		path_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		path_edit.placeholder_text = "Select a node in the scene tree"
-		path_edit.tooltip_text = "Select a node in the scene tree, then click Select"
-		path_edit.text_changed.connect(func(txt): _target_paths[i] = NodePath(txt))
-		row.add_child(path_edit)
-
-		var sel_btn := Button.new()
-		sel_btn.text = "Select"
-		sel_btn.tooltip_text = "Select node(s) in the scene tree first"
-		sel_btn.pressed.connect(_on_select_target.bind(path_edit, i))
-		row.add_child(sel_btn)
-
-		var remove_btn := Button.new()
-		remove_btn.text = "X"
-		remove_btn.pressed.connect(_on_remove_target_row.bind(i))
-		row.add_child(remove_btn)
-
-		_targets_container.add_child(row)
-
-
-func _on_select_target(_path_edit: LineEdit, idx: int) -> void:
-	var selected := EditorInterface.get_selection().get_selected_nodes()
-	if selected.is_empty():
-		return
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		return
-	var added := false
-	for node in selected:
-		if not root.is_ancestor_of(node):
-			continue
-		var path := root.get_path_to(node)
-		if path in _target_paths:
-			continue
-		if not added and _target_paths[idx].is_empty():
-			_target_paths[idx] = path
-		else:
-			_target_paths.append(path)
-		added = true
-	if added:
-		_refresh_target_rows()
-
-
-func _on_add_target_row() -> void:
-	_target_paths.append(NodePath())
-	_refresh_target_rows()
-
-
-func _on_remove_target_row(idx: int) -> void:
-	_target_paths.remove_at(idx)
-	_refresh_target_rows()
-
-
 func _apply_layers_to_gi(inst: GeometryInstance3D, layer_mask: int) -> void:
 	var orig: int = inst.get_meta("_kale_orig_layers", -1)
 	if orig == -1:
@@ -518,25 +436,23 @@ func _restore_layers_from_gi(inst: GeometryInstance3D) -> void:
 
 func _assign_target_layers(root: Node) -> void:
 	var layer_mask := 1 << DECAL_LAYER_BIT
-	for path in _target_paths:
-		var target := root.get_node_or_null(path)
-		if not target:
-			continue
-		if target is GeometryInstance3D:
-			_apply_layers_to_gi(target, layer_mask)
-		for gi in target.find_children("*", "GeometryInstance3D", true, false):
-			_apply_layers_to_gi(gi, layer_mask)
+	var target := root.get_node_or_null(DECAL_TARGET_PATH)
+	if not target:
+		return
+	if target is GeometryInstance3D:
+		_apply_layers_to_gi(target, layer_mask)
+	for gi in target.find_children("*", "GeometryInstance3D", true, false):
+		_apply_layers_to_gi(gi, layer_mask)
 
 
 func _restore_target_layers(root: Node) -> void:
-	for path in _target_paths:
-		var target := root.get_node_or_null(path)
-		if not target:
-			continue
-		if target is GeometryInstance3D:
-			_restore_layers_from_gi(target)
-		for gi in target.find_children("*", "GeometryInstance3D", true, false):
-			_restore_layers_from_gi(gi)
+	var target := root.get_node_or_null(DECAL_TARGET_PATH)
+	if not target:
+		return
+	if target is GeometryInstance3D:
+		_restore_layers_from_gi(target)
+	for gi in target.find_children("*", "GeometryInstance3D", true, false):
+		_restore_layers_from_gi(gi)
 
 
 func _on_select_in_inspector() -> void:
