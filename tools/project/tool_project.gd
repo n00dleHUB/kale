@@ -168,7 +168,7 @@ func build_panel() -> Control:
 	tgt_add.pressed.connect(_on_add_target_row)
 	tgt_body.add_child(tgt_add)
 
-	_panel.add_child(_make_section("Projection Targets", false, tgt_body))
+	_panel.add_child(_make_section("Projection Targets", true, tgt_body))
 
 	_refresh_target_rows()
 
