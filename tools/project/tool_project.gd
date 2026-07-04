@@ -627,7 +627,7 @@ func _on_remove() -> void:
 	_selected_decal = null
 
 
-func _on_param_changed() -> void:
+func _on_param_changed(_v: float = 0.0) -> void:
 	if _selected_decal and is_instance_valid(_selected_decal):
 		_update_decal_from_ui(_selected_decal)
 
