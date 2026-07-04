@@ -394,7 +394,11 @@ func on_editor_scene_changed(_root: Node) -> void:
 	for child in root.find_children("*", "Decal", true, false):
 		if child.has_meta("map_project"):
 			var map_name: String = child.get_meta("map_project")
-			var idx := _map_dropdown.get_item_index(map_name)
+			var idx := -1
+			for i in _map_dropdown.item_count:
+				if _map_dropdown.get_item_text(i) == map_name:
+					idx = i
+					break
 			if idx >= 0:
 				_map_dropdown.select(idx)
 				_on_map_selected(idx)
