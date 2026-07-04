@@ -2,6 +2,7 @@
 extends KaleBase
 
 const Presets = preload("res://addons/Kale/tools/project/project_data.gd")
+const ShaderFx = preload("res://addons/Kale/tools/project/decal_effect.gdshader")
 
 var _panel: VBoxContainer
 var _map_dropdown: OptionButton
@@ -36,6 +37,17 @@ var _df_begin_spin: SpinBox
 var _df_begin_slider: HSlider
 var _df_len_spin: SpinBox
 var _df_len_slider: HSlider
+
+var _sat_spin: SpinBox
+var _sat_slider: HSlider
+var _hue_spin: SpinBox
+var _hue_slider: HSlider
+var _sharp_spin: SpinBox
+var _sharp_slider: HSlider
+var _bright_spin: SpinBox
+var _bright_slider: HSlider
+var _contrast_spin: SpinBox
+var _contrast_slider: HSlider
 
 var _setting_slider := false
 var _decal_nodes: Array[Decal] = []
@@ -85,33 +97,41 @@ func build_panel() -> Control:
 	btn_row.add_child(_remove_btn)
 	_panel.add_child(btn_row)
 
-	var size_body := VBoxContainer.new()
+	# ── Decal Parameters ──
+	var decal_lbl := Label.new()
+	decal_lbl.text = "Decal Parameters"
+	decal_lbl.add_theme_font_size_override("font_size", 13)
+	_panel.add_child(decal_lbl)
+
+	# Size
 	_size_x = SpinBox.new()
 	_size_x.max_value = 99999
 	_size_y = SpinBox.new()
 	_size_y.max_value = 99999
 	_size_z = SpinBox.new()
 	_size_z.max_value = 99999
-	size_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
-	_panel.add_child(_make_section("Size", true, size_body))
+	_panel.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
 
-	var tex_body := VBoxContainer.new()
-	tex_body.add_child(_build_texture_row("Albedo:"))
-	tex_body.add_child(_build_texture_row("Normal:"))
-	tex_body.add_child(_build_texture_row("ORM:"))
-	tex_body.add_child(_build_texture_row("Emission:"))
-	_panel.add_child(_make_section("Textures", true, tex_body))
+	_panel.add_child(HSeparator.new())
 
-	var param_body := VBoxContainer.new()
+	# Textures
+	_panel.add_child(_build_texture_row("Albedo:"))
+	_panel.add_child(_build_texture_row("Normal:"))
+	_panel.add_child(_build_texture_row("ORM:"))
+	_panel.add_child(_build_texture_row("Emission:"))
+
+	_panel.add_child(HSeparator.new())
+
+	# Parameters
 	_ee_spin = SpinBox.new()
 	_ee_slider = HSlider.new()
-	param_body.add_child(_make_slider_row("Emission Energy:", _ee_spin, _ee_slider, 0.0, 100.0, 0.01, 0.0))
+	_panel.add_child(_make_slider_row("Emission Energy:", _ee_spin, _ee_slider, 0.0, 100.0, 0.01, 0.0))
 	_ee_spin.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
 	_ee_slider.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
 
 	_am_spin = SpinBox.new()
 	_am_slider = HSlider.new()
-	param_body.add_child(_make_slider_row("Albedo Mix:", _am_spin, _am_slider, 0.0, 1.0, 0.01, 1.0))
+	_panel.add_child(_make_slider_row("Albedo Mix:", _am_spin, _am_slider, 0.0, 1.0, 0.01, 1.0))
 	_am_spin.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
 	_am_slider.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
 
@@ -124,47 +144,81 @@ func build_panel() -> Control:
 	mod_lbl.text = "Modulate:"
 	mod_row.add_child(mod_lbl)
 	mod_row.add_child(_modulate)
-	param_body.add_child(mod_row)
+	_panel.add_child(mod_row)
 
 	_nf_spin = SpinBox.new()
 	_nf_slider = HSlider.new()
-	param_body.add_child(_make_slider_row("Normal Fade:", _nf_spin, _nf_slider, 0.0, 1.0, 0.001, 0.0))
+	_panel.add_child(_make_slider_row("Normal Fade:", _nf_spin, _nf_slider, 0.0, 1.0, 0.001, 0.0))
 	_nf_spin.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
 	_nf_slider.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
-	_panel.add_child(_make_section("Parameters", true, param_body))
 
-	var fade_body := VBoxContainer.new()
+	_panel.add_child(HSeparator.new())
+
+	# Vertical Fade
 	_uf_spin = SpinBox.new()
 	_uf_slider = HSlider.new()
-	fade_body.add_child(_make_slider_row("Upper Fade:", _uf_spin, _uf_slider, 0.0, 10.0, 0.001, 0.3))
+	_panel.add_child(_make_slider_row("Upper Fade:", _uf_spin, _uf_slider, 0.0, 10.0, 0.001, 0.3))
 	_uf_spin.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
 	_uf_slider.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
 
 	_lf_spin = SpinBox.new()
 	_lf_slider = HSlider.new()
-	fade_body.add_child(_make_slider_row("Lower Fade:", _lf_spin, _lf_slider, 0.0, 10.0, 0.001, 0.3))
+	_panel.add_child(_make_slider_row("Lower Fade:", _lf_spin, _lf_slider, 0.0, 10.0, 0.001, 0.3))
 	_lf_spin.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
-	_panel.add_child(_make_section("Vertical Fade", true, fade_body))
 
-	var dist_body := VBoxContainer.new()
+	_panel.add_child(HSeparator.new())
+
+	# Distance Fade
 	_df_enabled = CheckBox.new()
 	_df_enabled.text = "Enable"
 	_df_enabled.toggled.connect(func(_t): _on_param_changed())
-	dist_body.add_child(_df_enabled)
+	_panel.add_child(_df_enabled)
 
 	_df_begin_spin = SpinBox.new()
 	_df_begin_slider = HSlider.new()
-	dist_body.add_child(_make_slider_row("Begin:", _df_begin_spin, _df_begin_slider, 0.0, 1000.0, 0.1, 10.0))
+	_panel.add_child(_make_slider_row("Begin:", _df_begin_spin, _df_begin_slider, 0.0, 1000.0, 0.1, 10.0))
 	_df_begin_spin.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
 	_df_begin_slider.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
 
 	_df_len_spin = SpinBox.new()
 	_df_len_slider = HSlider.new()
-	dist_body.add_child(_make_slider_row("Length:", _df_len_spin, _df_len_slider, 0.0, 1000.0, 0.1, 10.0))
+	_panel.add_child(_make_slider_row("Length:", _df_len_spin, _df_len_slider, 0.0, 1000.0, 0.1, 10.0))
 	_df_len_spin.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
 	_df_len_slider.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
-	_panel.add_child(_make_section("Distance Fade", true, dist_body))
+
+	# ── Shader Effects ──
+	var fx_body := VBoxContainer.new()
+	_sat_spin = SpinBox.new()
+	_sat_slider = HSlider.new()
+	fx_body.add_child(_make_slider_row("Saturation:", _sat_spin, _sat_slider, 0.0, 2.0, 0.01, 1.0))
+	_sat_spin.value_changed.connect(_sync_slider.bind(_sat_spin, _sat_slider))
+	_sat_slider.value_changed.connect(_sync_slider.bind(_sat_spin, _sat_slider))
+
+	_hue_spin = SpinBox.new()
+	_hue_slider = HSlider.new()
+	fx_body.add_child(_make_slider_row("Hue Shift:", _hue_spin, _hue_slider, -1.0, 1.0, 0.01, 0.0))
+	_hue_spin.value_changed.connect(_sync_slider.bind(_hue_spin, _hue_slider))
+	_hue_slider.value_changed.connect(_sync_slider.bind(_hue_spin, _hue_slider))
+
+	_sharp_spin = SpinBox.new()
+	_sharp_slider = HSlider.new()
+	fx_body.add_child(_make_slider_row("Sharpness:", _sharp_spin, _sharp_slider, 0.0, 10.0, 0.1, 0.0))
+	_sharp_spin.value_changed.connect(_sync_slider.bind(_sharp_spin, _sharp_slider))
+	_sharp_slider.value_changed.connect(_sync_slider.bind(_sharp_spin, _sharp_slider))
+
+	_bright_spin = SpinBox.new()
+	_bright_slider = HSlider.new()
+	fx_body.add_child(_make_slider_row("Brightness:", _bright_spin, _bright_slider, 0.0, 2.0, 0.01, 1.0))
+	_bright_spin.value_changed.connect(_sync_slider.bind(_bright_spin, _bright_slider))
+	_bright_slider.value_changed.connect(_sync_slider.bind(_bright_spin, _bright_slider))
+
+	_contrast_spin = SpinBox.new()
+	_contrast_slider = HSlider.new()
+	fx_body.add_child(_make_slider_row("Contrast:", _contrast_spin, _contrast_slider, 0.0, 2.0, 0.01, 1.0))
+	_contrast_spin.value_changed.connect(_sync_slider.bind(_contrast_spin, _contrast_slider))
+	_contrast_slider.value_changed.connect(_sync_slider.bind(_contrast_spin, _contrast_slider))
+	_panel.add_child(_make_section("Shader Effects", true, fx_body))
 
 	_on_map_selected(_map_dropdown.selected)
 
@@ -339,6 +393,11 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_set_spin_slider(_df_begin_spin, _df_begin_slider, data.get("dfb", 10.0))
 	_set_spin_slider(_df_len_spin, _df_len_slider, data.get("dfl", 10.0))
 	_df_enabled.button_pressed = data.get("dfe", false)
+	_set_spin_slider(_sat_spin, _sat_slider, 1.0)
+	_set_spin_slider(_hue_spin, _hue_slider, 0.0)
+	_set_spin_slider(_sharp_spin, _sharp_slider, 0.0)
+	_set_spin_slider(_bright_spin, _bright_slider, 1.0)
+	_set_spin_slider(_contrast_spin, _contrast_slider, 1.0)
 	_setting_slider = false
 
 
@@ -358,6 +417,21 @@ func _read_decal_to_ui(decal: Decal) -> void:
 	_set_spin_slider(_df_begin_spin, _df_begin_slider, decal.distance_fade_begin)
 	_set_spin_slider(_df_len_spin, _df_len_slider, decal.distance_fade_length)
 	_df_enabled.button_pressed = decal.distance_fade_enabled
+
+	# Try to read shader values from existing material_override
+	var mat_ov := decal.material_override as ShaderMaterial
+	if mat_ov:
+		_set_spin_slider(_sat_spin, _sat_slider, mat_ov.get_shader_parameter("u_saturation"))
+		_set_spin_slider(_hue_spin, _hue_slider, mat_ov.get_shader_parameter("u_hue_shift"))
+		_set_spin_slider(_sharp_spin, _sharp_slider, mat_ov.get_shader_parameter("u_sharpness"))
+		_set_spin_slider(_bright_spin, _bright_slider, mat_ov.get_shader_parameter("u_brightness"))
+		_set_spin_slider(_contrast_spin, _contrast_slider, mat_ov.get_shader_parameter("u_contrast"))
+	else:
+		_set_spin_slider(_sat_spin, _sat_slider, 1.0)
+		_set_spin_slider(_hue_spin, _hue_slider, 0.0)
+		_set_spin_slider(_sharp_spin, _sharp_slider, 0.0)
+		_set_spin_slider(_bright_spin, _bright_slider, 1.0)
+		_set_spin_slider(_contrast_spin, _contrast_slider, 1.0)
 	_setting_slider = false
 
 	_modulate.color = decal.modulate
@@ -468,6 +542,28 @@ func _update_decal_from_ui(decal: Decal) -> void:
 	decal.distance_fade_enabled = _df_enabled.button_pressed
 	decal.distance_fade_begin = _df_begin_spin.value
 	decal.distance_fade_length = _df_len_spin.value
+
+	var sat := _sat_spin.value
+	var hue := _hue_spin.value
+	var sharp := _sharp_spin.value
+	var bright := _bright_spin.value
+	var contrast := _contrast_spin.value
+	var is_neutral := abs(sat - 1.0) < 0.001 and abs(hue) < 0.001 and abs(sharp) < 0.001 and abs(bright - 1.0) < 0.001 and abs(contrast - 1.0) < 0.001
+
+	if is_neutral:
+		decal.material_override = null
+	else:
+		var mat := decal.material_override as ShaderMaterial
+		if not mat:
+			mat = ShaderMaterial.new()
+			mat.shader = ShaderFx
+			decal.material_override = mat
+		mat.set_shader_parameter("u_albedo", _load_texture_or_null(_tex_albedo_path.text))
+		mat.set_shader_parameter("u_saturation", sat)
+		mat.set_shader_parameter("u_hue_shift", hue)
+		mat.set_shader_parameter("u_sharpness", sharp)
+		mat.set_shader_parameter("u_brightness", bright)
+		mat.set_shader_parameter("u_contrast", contrast)
 
 
 func on_editor_scene_changed(_root: Node) -> void:
