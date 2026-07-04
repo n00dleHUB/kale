@@ -77,6 +77,10 @@ func build_panel() -> Control:
 	_remove_btn.text = "Remove Decal"
 	_remove_btn.pressed.connect(_on_remove)
 	btn_row.add_child(_remove_btn)
+	var _select_btn := Button.new()
+	_select_btn.text = "Select in Inspector"
+	_select_btn.pressed.connect(_on_select_in_inspector)
+	btn_row.add_child(_select_btn)
 	_panel.add_child(btn_row)
 
 	# ── Decal Parameters (collapsible) ──
@@ -314,11 +318,6 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_set_spin_slider(_nf_spin, _nf_slider, data.get("nf", 0.0))
 	_set_spin_slider(_uf_spin, _uf_slider, data.get("uf", 0.3))
 	_set_spin_slider(_lf_spin, _lf_slider, data.get("lf", 0.3))
-	_set_spin_slider(_sat_spin, _sat_slider, 1.0)
-	_set_spin_slider(_hue_spin, _hue_slider, 0.0)
-	_set_spin_slider(_sharp_spin, _sharp_slider, 0.0)
-	_set_spin_slider(_bright_spin, _bright_slider, 1.0)
-	_set_spin_slider(_contrast_spin, _contrast_slider, 1.0)
 	_setting_slider = false
 
 
@@ -335,20 +334,6 @@ func _read_decal_to_ui(decal: Decal) -> void:
 	_set_spin_slider(_nf_spin, _nf_slider, decal.normal_fade)
 	_set_spin_slider(_uf_spin, _uf_slider, decal.upper_fade)
 	_set_spin_slider(_lf_spin, _lf_slider, decal.lower_fade)
-	# Try to read shader values from existing material_override
-	var mat_ov := decal.material_override as ShaderMaterial
-	if mat_ov:
-		_set_spin_slider(_sat_spin, _sat_slider, mat_ov.get_shader_parameter("u_saturation"))
-		_set_spin_slider(_hue_spin, _hue_slider, mat_ov.get_shader_parameter("u_hue_shift"))
-		_set_spin_slider(_sharp_spin, _sharp_slider, mat_ov.get_shader_parameter("u_sharpness"))
-		_set_spin_slider(_bright_spin, _bright_slider, mat_ov.get_shader_parameter("u_brightness"))
-		_set_spin_slider(_contrast_spin, _contrast_slider, mat_ov.get_shader_parameter("u_contrast"))
-	else:
-		_set_spin_slider(_sat_spin, _sat_slider, 1.0)
-		_set_spin_slider(_hue_spin, _hue_slider, 0.0)
-		_set_spin_slider(_sharp_spin, _sharp_slider, 0.0)
-		_set_spin_slider(_bright_spin, _bright_slider, 1.0)
-		_set_spin_slider(_contrast_spin, _contrast_slider, 1.0)
 	_setting_slider = false
 
 	_modulate.color = decal.modulate
@@ -426,6 +411,11 @@ func _on_remove() -> void:
 				child.queue_free()
 	_decal_nodes = []
 	_selected_decal = null
+
+
+func _on_select_in_inspector() -> void:
+	if _selected_decal and is_instance_valid(_selected_decal):
+		EditorInterface.edit_node(_selected_decal)
 
 
 func _on_param_changed(_v: float = 0.0) -> void:

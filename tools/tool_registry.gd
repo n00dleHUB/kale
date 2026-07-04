@@ -44,16 +44,16 @@ static func _create_tools() -> Array[KaleBase]:
 	var ToolLuma = preload("res://addons/Kale/tools/luma/tool_luma.gd")
 	result.append(ToolLuma.new())
 
-	var ToolImport = preload("res://addons/Kale/tools/import/tool_import.gd")
-	result.append(ToolImport.new())
+	var ToolProject = preload("res://addons/Kale/tools/project/tool_project.gd")
+	result.append(ToolProject.new())
 
 	var ToolCopy = preload("res://addons/Kale/tools/copy_transforms/tool_copy.gd")
 	result.append(ToolCopy.new())
 
+	var ToolImport = preload("res://addons/Kale/tools/import/tool_import.gd")
+	result.append(ToolImport.new())
+
 	var ToolExport = preload("res://addons/Kale/tools/export/tool_export.gd")
 	result.append(ToolExport.new())
-
-	var ToolProject = preload("res://addons/Kale/tools/project/tool_project.gd")
-	result.append(ToolProject.new())
 
 	return result
