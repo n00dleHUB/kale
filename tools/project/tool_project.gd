@@ -5,6 +5,8 @@ const Presets = preload("res://addons/Kale/tools/project/project_data.gd")
 
 var _panel: VBoxContainer
 var _map_dropdown: OptionButton
+var _sub_dropdown: OptionButton
+var _sub_row: HBoxContainer
 var _spawn_btn: Button
 var _remove_btn: Button
 
@@ -16,9 +18,7 @@ var _size_y: SpinBox
 var _size_z: SpinBox
 
 var _albedo_path: LineEdit
-var _albedo_browse: Button
 var _emission_path: LineEdit
-var _emission_browse: Button
 
 var _emission_energy: SpinBox
 var _normal_fade: SpinBox
@@ -26,8 +26,10 @@ var _upper_fade: SpinBox
 var _lower_fade: SpinBox
 var _modulate: ColorPickerButton
 
-var _decal_node: Decal
-var _preset_pos: Vector3
+var _decal_nodes: Array[Decal] = []
+var _selected_decal: Decal
+var _preset_data = {}
+var _multi_data: Array = []
 
 
 func get_tool_name() -> String:
@@ -38,7 +40,6 @@ func build_panel() -> Control:
 	_panel = VBoxContainer.new()
 	_panel.custom_minimum_size = Vector2(320, 0)
 
-	# ── Map Preset section ──
 	var pres_lbl := Label.new()
 	pres_lbl.text = "Map Preset:"
 	_panel.add_child(pres_lbl)
@@ -50,19 +51,25 @@ func build_panel() -> Control:
 	_map_dropdown.item_selected.connect(_on_map_selected)
 	_panel.add_child(_map_dropdown)
 
+	_sub_row = HBoxContainer.new()
+	_sub_dropdown = OptionButton.new()
+	_sub_dropdown.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sub_dropdown.item_selected.connect(_on_sub_selected)
+	_sub_row.add_child(_sub_dropdown)
+	_sub_row.visible = false
+	_panel.add_child(_sub_row)
+
 	var btn_row := HBoxContainer.new()
 	_spawn_btn = Button.new()
 	_spawn_btn.text = "Spawn Decal"
 	_spawn_btn.pressed.connect(_on_spawn)
 	btn_row.add_child(_spawn_btn)
-
 	_remove_btn = Button.new()
 	_remove_btn.text = "Remove Decal"
 	_remove_btn.pressed.connect(_on_remove)
 	btn_row.add_child(_remove_btn)
 	_panel.add_child(btn_row)
 
-	# ── Size section ──
 	var size_body := VBoxContainer.new()
 	_size_x = SpinBox.new()
 	_size_x.max_value = 99999
@@ -73,7 +80,6 @@ func build_panel() -> Control:
 	size_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
 	_panel.add_child(_make_section("Size", true, size_body))
 
-	# ── Position Offset section ──
 	var pos_body := VBoxContainer.new()
 	_pos_x = SpinBox.new()
 	_pos_x.max_value = 99999
@@ -87,7 +93,6 @@ func build_panel() -> Control:
 	pos_body.add_child(_make_vec3_row("Offset X/Y/Z:", _pos_x, _pos_y, _pos_z))
 	_panel.add_child(_make_section("Position Offset", true, pos_body))
 
-	# ── Textures section ──
 	var tex_body := VBoxContainer.new()
 	var alb_row := HBoxContainer.new()
 	var alb_lbl := Label.new()
@@ -96,10 +101,10 @@ func build_panel() -> Control:
 	_albedo_path = LineEdit.new()
 	_albedo_path.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	alb_row.add_child(_albedo_path)
-	_albedo_browse = Button.new()
-	_albedo_browse.text = "Browse"
-	_albedo_browse.pressed.connect(_on_browse_albedo)
-	alb_row.add_child(_albedo_browse)
+	var alb_browse := Button.new()
+	alb_browse.text = "Browse"
+	alb_browse.pressed.connect(_on_browse_albedo)
+	alb_row.add_child(alb_browse)
 	tex_body.add_child(alb_row)
 
 	var em_row := HBoxContainer.new()
@@ -109,14 +114,13 @@ func build_panel() -> Control:
 	_emission_path = LineEdit.new()
 	_emission_path.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	em_row.add_child(_emission_path)
-	_emission_browse = Button.new()
-	_emission_browse.text = "Browse"
-	_emission_browse.pressed.connect(_on_browse_emission)
-	em_row.add_child(_emission_browse)
+	var em_browse := Button.new()
+	em_browse.text = "Browse"
+	em_browse.pressed.connect(_on_browse_emission)
+	em_row.add_child(em_browse)
 	tex_body.add_child(em_row)
 	_panel.add_child(_make_section("Textures", true, tex_body))
 
-	# ── Parameters section ──
 	var param_body := VBoxContainer.new()
 	_emission_energy = SpinBox.new()
 	_emission_energy.max_value = 100.0
@@ -139,7 +143,6 @@ func build_panel() -> Control:
 	param_body.add_child(_make_row("Normal Fade:", _normal_fade))
 	_panel.add_child(_make_section("Parameters", true, param_body))
 
-	# ── Vertical Fade section ──
 	var fade_body := VBoxContainer.new()
 	_upper_fade = SpinBox.new()
 	_upper_fade.max_value = 10.0
@@ -198,46 +201,80 @@ func _make_vec3_row(label: String, sx: SpinBox, sy: SpinBox, sz: SpinBox) -> HBo
 
 func _on_map_selected(idx: int) -> void:
 	var name := _map_dropdown.get_item_text(idx)
-	var preset := Presets.get_preset(name)
-	if preset.is_empty():
-		return
+	_preset_data = Presets.get_preset(name)
 
-	_preset_pos = preset.get("pos", Vector3.ZERO)
-	var sz: Vector3 = preset.get("size", Vector3.ONE)
-	_size_x.value = sz.x
-	_size_y.value = sz.y
-	_size_z.value = sz.z
+	_decal_nodes = []
+	_selected_decal = null
+	_find_existing_decals(name)
+
+	if _preset_data is Array:
+		_multi_data = _preset_data
+		_sub_dropdown.clear()
+		for d in _multi_data:
+			var label := "Decal " + str(_sub_dropdown.item_count + 1)
+			_sub_dropdown.add_item(label)
+		_sub_row.visible = true
+		if _sub_dropdown.item_count > 0:
+			_sub_dropdown.select(0)
+			_on_sub_selected(0)
+	else:
+		_multi_data = []
+		_sub_row.visible = false
+		_update_ui_from_preset(_preset_data)
+		if _decal_nodes.size() > 0:
+			_selected_decal = _decal_nodes[0]
+			_read_decal_to_ui(_selected_decal)
+
+
+func _on_sub_selected(idx: int) -> void:
+	if idx < 0 or idx >= _multi_data.size():
+		return
+	_update_ui_from_preset(_multi_data[idx])
+	if idx < _decal_nodes.size():
+		_selected_decal = _decal_nodes[idx]
+		_read_decal_to_ui(_selected_decal)
+
+
+func _update_ui_from_preset(data: Dictionary) -> void:
+	_size_x.value = data.get("size", Vector3.ONE).x
+	_size_y.value = data.get("size", Vector3.ONE).y
+	_size_z.value = data.get("size", Vector3.ONE).z
 	_pos_x.value = 0.0
 	_pos_y.value = 0.0
 	_pos_z.value = 0.0
-	_albedo_path.text = preset.get("tex", "")
-	_emission_path.text = preset.get("tex", "")
-	_emission_energy.value = preset.get("ee", 0.0)
-	_normal_fade.value = preset.get("nf", 0.0)
-	_upper_fade.value = preset.get("uf", 0.3)
-	_lower_fade.value = preset.get("lf", 0.3)
-
-	# Try to find existing decal for this map
-	_find_existing_decal()
+	_albedo_path.text = data.get("tex", "")
+	_emission_path.text = data.get("tex", "")
+	_emission_energy.value = data.get("ee", 0.0)
+	_normal_fade.value = data.get("nf", 0.0)
+	_upper_fade.value = data.get("uf", 0.3)
+	_lower_fade.value = data.get("lf", 0.3)
 
 
-func _find_existing_decal() -> void:
+func _read_decal_to_ui(decal: Decal) -> void:
+	if not decal or not is_instance_valid(decal):
+		return
+	_size_x.value = decal.size.x
+	_size_y.value = decal.size.y
+	_size_z.value = decal.size.z
+	_pos_x.value = decal.position.x - _preset_data.get("pos", Vector3.ZERO).x if not (_preset_data is Array) else 0.0
+	_pos_y.value = decal.position.y - _preset_data.get("pos", Vector3.ZERO).y if not (_preset_data is Array) else 0.0
+	_pos_z.value = decal.position.z - _preset_data.get("pos", Vector3.ZERO).z if not (_preset_data is Array) else 0.0
+	_emission_energy.value = decal.emission_energy
+	_normal_fade.value = decal.normal_fade
+	_upper_fade.value = decal.upper_fade
+	_lower_fade.value = decal.lower_fade
+	_modulate.color = decal.modulate
+
+
+func _find_existing_decals(map_name: String) -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
-	_decal_node = null
+	_decal_nodes = []
 	for child in root.find_children("*", "Decal", true, false):
-		if child.has_meta("map_project") and child.get_meta("map_project") == _map_dropdown.get_item_text(_map_dropdown.selected):
-			_decal_node = child
-			break
-	if _decal_node:
-		_size_x.value = _decal_node.size.x
-		_size_y.value = _decal_node.size.y
-		_size_z.value = _decal_node.size.z
-		var offset := _decal_node.position - _preset_pos
-		_pos_x.value = offset.x
-		_pos_y.value = offset.y
-		_pos_z.value = offset.z
+		if child.has_meta("map_project") and child.get_meta("map_project") == map_name:
+			_decal_nodes.append(child)
+	_decal_nodes.sort_custom(func(a, b): return a.name < b.name)
 
 
 func _on_spawn() -> void:
@@ -249,52 +286,82 @@ func _on_spawn() -> void:
 	if map_name.is_empty():
 		return
 
-	# Remove existing decal for this map first
-	if _decal_node and is_instance_valid(_decal_node):
-		_decal_node.queue_free()
+	# Remove existing decals for this map
+	_on_remove()
 
-	_decal_node = Decal.new()
-	_decal_node.name = "MapProjection_" + map_name
-	_decal_node.set_meta("map_project", map_name)
-	root.add_child(_decal_node, true)
-	_decal_node.set_owner(root)
+	if _preset_data is Array:
+		var i := 0
+		for entry in _preset_data:
+			_spawn_single_decal(root, map_name + "_" + str(i), entry, map_name)
+			i += 1
+	else:
+		_spawn_single_decal(root, map_name, _preset_data, map_name)
 
-	_update_decal_from_ui()
-	_save_cache()
+	_find_existing_decals(map_name)
+	if _decal_nodes.size() > 0:
+		_selected_decal = _decal_nodes[0]
+		if _multi_data.size() > 0 and _sub_dropdown.item_count > 0:
+			_sub_dropdown.select(0)
+			_on_sub_selected(0)
+
+
+func _spawn_single_decal(root: Node, name: String, data, map_name: String) -> void:
+	var decal := Decal.new()
+	decal.name = "MapProjection_" + name
+	decal.set_meta("map_project", map_name)
+
+	var pos: Vector3 = data.get("pos", Vector3.ZERO) if data is Dictionary else Vector3.ZERO
+	decal.position = pos
+	decal.size = data.get("size", Vector3.ONE) if data is Dictionary else Vector3.ONE
+
+	var tex_path: String = data.get("tex", "") if data is Dictionary else ""
+	if not tex_path.is_empty() and ResourceLoader.exists(tex_path):
+		decal.texture_albedo = load(tex_path)
+		decal.texture_emission = load(tex_path)
+
+	decal.emission_energy = data.get("ee", 0.0) if data is Dictionary else 0.0
+	decal.normal_fade = data.get("nf", 0.0) if data is Dictionary else 0.0
+	decal.upper_fade = data.get("uf", 0.3) if data is Dictionary else 0.3
+	decal.lower_fade = data.get("lf", 0.3) if data is Dictionary else 0.3
+
+	root.add_child(decal, true)
+	decal.set_owner(root)
 
 
 func _on_remove() -> void:
-	if _decal_node and is_instance_valid(_decal_node):
-		_decal_node.queue_free()
-		_decal_node = null
+	for d in _decal_nodes:
+		if is_instance_valid(d):
+			d.queue_free()
+	_decal_nodes = []
+	_selected_decal = null
 
 
 func _on_param_changed(_v: float) -> void:
-	if _decal_node and is_instance_valid(_decal_node):
-		_update_decal_from_ui()
+	if _selected_decal and is_instance_valid(_selected_decal):
+		_update_decal_from_ui(_selected_decal)
 
 
-func _update_decal_from_ui() -> void:
-	if not _decal_node or not is_instance_valid(_decal_node):
+func _update_decal_from_ui(decal: Decal) -> void:
+	if not decal or not is_instance_valid(decal):
 		return
 
-	var map_name := _map_dropdown.get_item_text(_map_dropdown.selected)
-	var preset := Presets.get_preset(map_name)
-	var base_pos: Vector3 = preset.get("pos", Vector3.ZERO) if not preset.is_empty() else Vector3.ZERO
-
-	_decal_node.position = base_pos + Vector3(_pos_x.value, _pos_y.value, _pos_z.value)
-	_decal_node.size = Vector3(_size_x.value, _size_y.value, _size_z.value)
+	decal.position = Vector3(
+		decal.position.x + _pos_x.value,
+		decal.position.y + _pos_y.value,
+		decal.position.z + _pos_z.value
+	)
+	decal.size = Vector3(_size_x.value, _size_y.value, _size_z.value)
 
 	if ResourceLoader.exists(_albedo_path.text):
-		_decal_node.texture_albedo = load(_albedo_path.text)
+		decal.texture_albedo = load(_albedo_path.text)
 	if ResourceLoader.exists(_emission_path.text):
-		_decal_node.texture_emission = load(_emission_path.text)
+		decal.texture_emission = load(_emission_path.text)
 
-	_decal_node.emission_energy = _emission_energy.value
-	_decal_node.modulate = _modulate.color
-	_decal_node.normal_fade = _normal_fade.value
-	_decal_node.upper_fade = _upper_fade.value
-	_decal_node.lower_fade = _lower_fade.value
+	decal.emission_energy = _emission_energy.value
+	decal.modulate = _modulate.color
+	decal.normal_fade = _normal_fade.value
+	decal.upper_fade = _upper_fade.value
+	decal.lower_fade = _lower_fade.value
 
 
 func _on_browse_albedo() -> void:
@@ -317,48 +384,19 @@ func _on_browse_emission() -> void:
 	_panel.add_child(fd)
 
 
-func _save_cache() -> void:
-	var map_name := _map_dropdown.get_item_text(_map_dropdown.selected)
-	if map_name.is_empty():
-		return
-	if not _decal_node or not is_instance_valid(_decal_node):
-		return
-
-	var root := EditorInterface.get_edited_scene_root()
-	if not root:
-		return
-
-	var data := {
-		"map": map_name,
-		"pos": [_decal_node.position.x, _decal_node.position.y, _decal_node.position.z],
-		"size": [_decal_node.size.x, _decal_node.size.y, _decal_node.size.z],
-		"albedo": _albedo_path.text,
-		"emission": _emission_path.text,
-		"ee": _emission_energy.value,
-		"modulate": [_modulate.color.r, _modulate.color.g, _modulate.color.b, _modulate.color.a],
-		"nf": _normal_fade.value,
-		"uf": _upper_fade.value,
-		"lf": _lower_fade.value,
-	}
-	var cache_path := "res://addons/Kale/tools/project/cache/"
-	if not DirAccess.dir_exists_absolute(cache_path):
-		DirAccess.make_dir_recursive_absolute(cache_path)
-	var config := ConfigFile.new()
-	config.set_value("project", "data", data)
-	config.save(cache_path + "project_" + map_name + ".cfg")
-
-
 func on_editor_scene_changed(_root: Node) -> void:
-	# Auto-find existing decals in the new scene
-	_decal_node = null
+	_decal_nodes = []
+	_selected_decal = null
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
+	var found := false
 	for child in root.find_children("*", "Decal", true, false):
 		if child.has_meta("map_project"):
-			_decal_node = child
-			var idx := _map_dropdown.get_item_index(child.get_meta("map_project"))
+			var map_name: String = child.get_meta("map_project")
+			var idx := _map_dropdown.get_item_index(map_name)
 			if idx >= 0:
 				_map_dropdown.select(idx)
 				_on_map_selected(idx)
-			break
+				found = true
+				break

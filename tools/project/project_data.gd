@@ -3,6 +3,15 @@ extends Node
 
 
 const MAP_PRESETS := {
+	"Full_BR_Map": [
+		{ "tex": "res://raw/maptiles/MP_Granite_ClubHouse_Portal.jpg", "pos": Vector3(-449.99, 193.79, -574.91), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.508, "uf": 0.010048, "lf": 0.000287 },
+		{ "tex": "res://raw/maptiles/MP_Granite_MainStreet_Portal.jpg", "pos": Vector3(-1106.69, 0.0, 152.56), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.51, "uf": 0.000018, "lf": 0.000019 },
+		{ "tex": "res://raw/maptiles/MP_Granite_Marina_Portal.jpg", "pos": Vector3(-1201.90, 122.79, -604.90), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.504, "uf": 0.000013, "lf": 0.000019 },
+		{ "tex": "res://raw/maptiles/MP_Granite_MilitaryRnD_Portal.jpg", "pos": Vector3(469.0, 0.0, -685.40), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.51, "uf": 0.000071, "lf": 0.000030 },
+		{ "tex": "res://raw/maptiles/MP_Granite_MilitaryStorage_Portal.jpg", "pos": Vector3(561.77, 0.0, 388.34), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.527, "uf": 0.000029, "lf": 0.000015 },
+		{ "tex": "res://raw/maptiles/MP_Granite_TechCampus_Portal.jpg", "pos": Vector3(-209.75, 0.0, 320.75), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.502, "uf": 0.000022, "lf": 0.000028 },
+		{ "tex": "res://raw/maptiles/MP_Granite_Underground_Portal.jpg", "pos": Vector3(785.05, 239.37, -404.12), "size": Vector3(1000, 200, 1000), "ee": 0.0, "nf": 0.5, "uf": 0.000012, "lf": 0.000011 },
+	],
 	"MP_Abbasid": { "tex": "res://raw/maptiles/MP_Abbasid.jpg", "pos": Vector3(-84.69, 64.87, 122.93), "size": Vector3(1085, 100, 1085), "ee": 0.0, "nf": 0.49, "uf": 0.000035, "lf": 0.000128 },
 	"MP_Aftermath": { "tex": "res://raw/maptiles/MP_Aftermath.jpg", "pos": Vector3(-576.83, 61.62, -30.16), "size": Vector3(878, 150, 878), "ee": 0.0, "nf": 0.514, "uf": 0.000022, "lf": 0.000017 },
 	"MP_Badlands": { "tex": "res://raw/maptiles/MP_Badlands.jpg", "pos": Vector3(0.47, 95.29, -100.41), "size": Vector3(1400, 100, 1400), "ee": 0.0, "nf": 0.515, "uf": 0.000020, "lf": 0.000013 },
@@ -28,31 +37,14 @@ const MAP_PRESETS := {
 	"MP_Tungsten": { "tex": "res://raw/maptiles/MP_Tungsten.jpg", "pos": Vector3(60.24, 86.51, -25.08), "size": Vector3(1550, 100, 1550), "ee": 0.0, "nf": 0.507, "uf": 0.000039, "lf": 0.000033 },
 }
 
-# Full_BR_Map has sub-maps that share textures with individual Granite maps
-const FULL_BR_SUBMAPS := {
-	"Full_BR_Clubhouse": { "tex": "res://raw/maptiles/MP_Granite_ClubHouse_Portal.jpg", "pos": Vector3(-449.99, 193.79, -574.91), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.508, "uf": 0.010048, "lf": 0.000287 },
-	"Full_BR_MainStreet": { "tex": "res://raw/maptiles/MP_Granite_MainStreet_Portal.jpg", "pos": Vector3(-1106.69, 0.0, 152.56), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.51, "uf": 0.000018, "lf": 0.000019 },
-	"Full_BR_Marina": { "tex": "res://raw/maptiles/MP_Granite_Marina_Portal.jpg", "pos": Vector3(-1201.90, 122.79, -604.90), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.504, "uf": 0.000013, "lf": 0.000019 },
-	"Full_BR_MilitaryRnD": { "tex": "res://raw/maptiles/MP_Granite_MilitaryRnD_Portal.jpg", "pos": Vector3(469.0, 0.0, -685.40), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.51, "uf": 0.000071, "lf": 0.000030 },
-	"Full_BR_MilitaryStorage": { "tex": "res://raw/maptiles/MP_Granite_MilitaryStorage_Portal.jpg", "pos": Vector3(561.77, 0.0, 388.34), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.527, "uf": 0.000029, "lf": 0.000015 },
-	"Full_BR_TechCampus": { "tex": "res://raw/maptiles/MP_Granite_TechCampus_Portal.jpg", "pos": Vector3(-209.75, 0.0, 320.75), "size": Vector3(1000, 1000, 1000), "ee": 0.0, "nf": 0.502, "uf": 0.000022, "lf": 0.000028 },
-	"Full_BR_Underground": { "tex": "res://raw/maptiles/MP_Granite_Underground_Portal.jpg", "pos": Vector3(785.05, 239.37, -404.12), "size": Vector3(1000, 200, 1000), "ee": 0.0, "nf": 0.5, "uf": 0.000012, "lf": 0.000011 },
-}
-
 
 static func get_names() -> PackedStringArray:
 	var names: Array[String] = []
 	for key in MAP_PRESETS:
 		names.append(key)
-	for key in FULL_BR_SUBMAPS:
-		names.append(key)
 	names.sort()
 	return PackedStringArray(names)
 
 
-static func get_preset(name: String) -> Dictionary:
-	if MAP_PRESETS.has(name):
-		return MAP_PRESETS[name].duplicate()
-	if FULL_BR_SUBMAPS.has(name):
-		return FULL_BR_SUBMAPS[name].duplicate()
-	return {}
+static func get_preset(name: String):
+	return MAP_PRESETS.get(name, {})
