@@ -2,7 +2,6 @@
 extends KaleBase
 
 const Presets = preload("res://addons/Kale/tools/project/project_data.gd")
-const ShaderFx = preload("res://addons/Kale/tools/project/decal_effect.gdshader")
 
 var _panel: VBoxContainer
 var _map_dropdown: OptionButton
@@ -31,17 +30,6 @@ var _uf_slider: HSlider
 var _lf_spin: SpinBox
 var _lf_slider: HSlider
 var _modulate: ColorPickerButton
-
-var _sat_spin: SpinBox
-var _sat_slider: HSlider
-var _hue_spin: SpinBox
-var _hue_slider: HSlider
-var _sharp_spin: SpinBox
-var _sharp_slider: HSlider
-var _bright_spin: SpinBox
-var _bright_slider: HSlider
-var _contrast_spin: SpinBox
-var _contrast_slider: HSlider
 
 var _setting_slider := false
 var _decal_nodes: Array[Decal] = []
@@ -155,39 +143,6 @@ func build_panel() -> Control:
 	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 
 	_panel.add_child(_make_section("Decal Parameters", true, decal_body))
-
-	# ── Shader Effects ──
-	var fx_body := VBoxContainer.new()
-	_sat_spin = SpinBox.new()
-	_sat_slider = HSlider.new()
-	fx_body.add_child(_make_slider_row("Saturation:", _sat_spin, _sat_slider, 0.0, 2.0, 0.01, 1.0))
-	_sat_spin.value_changed.connect(_sync_slider.bind(_sat_spin, _sat_slider))
-	_sat_slider.value_changed.connect(_sync_slider.bind(_sat_spin, _sat_slider))
-
-	_hue_spin = SpinBox.new()
-	_hue_slider = HSlider.new()
-	fx_body.add_child(_make_slider_row("Hue Shift:", _hue_spin, _hue_slider, -1.0, 1.0, 0.01, 0.0))
-	_hue_spin.value_changed.connect(_sync_slider.bind(_hue_spin, _hue_slider))
-	_hue_slider.value_changed.connect(_sync_slider.bind(_hue_spin, _hue_slider))
-
-	_sharp_spin = SpinBox.new()
-	_sharp_slider = HSlider.new()
-	fx_body.add_child(_make_slider_row("Sharpness:", _sharp_spin, _sharp_slider, 0.0, 10.0, 0.1, 0.0))
-	_sharp_spin.value_changed.connect(_sync_slider.bind(_sharp_spin, _sharp_slider))
-	_sharp_slider.value_changed.connect(_sync_slider.bind(_sharp_spin, _sharp_slider))
-
-	_bright_spin = SpinBox.new()
-	_bright_slider = HSlider.new()
-	fx_body.add_child(_make_slider_row("Brightness:", _bright_spin, _bright_slider, 0.0, 2.0, 0.01, 1.0))
-	_bright_spin.value_changed.connect(_sync_slider.bind(_bright_spin, _bright_slider))
-	_bright_slider.value_changed.connect(_sync_slider.bind(_bright_spin, _bright_slider))
-
-	_contrast_spin = SpinBox.new()
-	_contrast_slider = HSlider.new()
-	fx_body.add_child(_make_slider_row("Contrast:", _contrast_spin, _contrast_slider, 0.0, 2.0, 0.01, 1.0))
-	_contrast_spin.value_changed.connect(_sync_slider.bind(_contrast_spin, _contrast_slider))
-	_contrast_slider.value_changed.connect(_sync_slider.bind(_contrast_spin, _contrast_slider))
-	_panel.add_child(_make_section("Shader Effects", true, fx_body))
 
 	_on_map_selected(_map_dropdown.selected)
 
@@ -501,27 +456,6 @@ func _update_decal_from_ui(decal: Decal) -> void:
 	decal.normal_fade = _nf_spin.value
 	decal.upper_fade = _uf_spin.value
 	decal.lower_fade = _lf_spin.value
-	var sat := _sat_spin.value
-	var hue := _hue_spin.value
-	var sharp := _sharp_spin.value
-	var bright := _bright_spin.value
-	var contrast := _contrast_spin.value
-	var is_neutral: bool = abs(sat - 1.0) < 0.001 and abs(hue) < 0.001 and abs(sharp) < 0.001 and abs(bright - 1.0) < 0.001 and abs(contrast - 1.0) < 0.001
-
-	if is_neutral:
-		decal.material_override = null
-	else:
-		var mat := decal.material_override as ShaderMaterial
-		if not mat:
-			mat = ShaderMaterial.new()
-			mat.shader = ShaderFx
-			decal.material_override = mat
-		mat.set_shader_parameter("u_albedo", _load_texture_or_null(_tex_albedo_path.text))
-		mat.set_shader_parameter("u_saturation", sat)
-		mat.set_shader_parameter("u_hue_shift", hue)
-		mat.set_shader_parameter("u_sharpness", sharp)
-		mat.set_shader_parameter("u_brightness", bright)
-		mat.set_shader_parameter("u_contrast", contrast)
 
 
 func on_editor_scene_changed(_root: Node) -> void:
