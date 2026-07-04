@@ -53,4 +53,7 @@ static func _create_tools() -> Array[KaleBase]:
 	var ToolExport = preload("res://addons/Kale/tools/export/tool_export.gd")
 	result.append(ToolExport.new())
 
+	var ToolProject = preload("res://addons/Kale/tools/project/tool_project.gd")
+	result.append(ToolProject.new())
+
 	return result
