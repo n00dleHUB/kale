@@ -510,6 +510,7 @@ func on_editor_scene_changed(_root: Node) -> void:
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
+	var found := false
 	for child in root.find_children("*", "Decal", true, false):
 		if child.has_meta("map_project"):
 			var map_name: String = child.get_meta("map_project")
@@ -521,4 +522,7 @@ func on_editor_scene_changed(_root: Node) -> void:
 			if idx >= 0:
 				_map_dropdown.select(idx)
 				_on_map_selected(idx)
+				found = true
 				break
+	if found:
+		_assign_target_layers(root)
