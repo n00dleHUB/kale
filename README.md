@@ -16,6 +16,18 @@ Collecion of Godot 4.x tools.
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+Installation:
+- Clone or download the repo into the folder "godotporject/addons/".
+- If you downloaded zip, make sure you unzip it.
+- Enable the plugin in Godot>AssetLib>Plugins.
+- 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+General info:
+- Sample textures included in the addon, bu you can get more at polyheaven.com/textures.
+- For the map project tool to work you must have Portal SDK 1.3.3 or later.
+  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 - **Chroma** — Apply material color, texture, and pattern. Restores materials on Godot reboot.
   <img width="603" height="859" alt="image" src="https://github.com/user-attachments/assets/c988cc12-2f14-4ac7-80fc-e0f5cde80d5b" />
 - **Luma** — Lighting tool. Adds and controls sky, sun, ambient, global illumination. Supports custom cubemap/HDRIs.
