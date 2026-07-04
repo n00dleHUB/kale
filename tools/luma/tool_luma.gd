@@ -399,6 +399,8 @@ func _on_changed() -> void:
 
 
 func _live_update() -> void:
+	if not _sdfgi or not _ssao or not _ssil or not _ssr:
+		return
 	var root := EditorInterface.get_edited_scene_root()
 	if not root:
 		return
@@ -452,7 +454,7 @@ func _live_update() -> void:
 			_applied_hdri = ""
 			we.queue_free()
 
-	if we and we.environment:
+	if we and we.environment and _sdfgi:
 		Env.update_gi_ao(we.environment, _sdfgi.button_pressed, _ssao.button_pressed, _ssil.button_pressed, _ssr.button_pressed)
 
 	Env.update_sun(
