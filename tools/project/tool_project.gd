@@ -10,9 +10,6 @@ var _sub_row: HBoxContainer
 var _spawn_btn: Button
 var _remove_btn: Button
 
-var _pos_x: SpinBox
-var _pos_y: SpinBox
-var _pos_z: SpinBox
 var _size_x: SpinBox
 var _size_y: SpinBox
 var _size_z: SpinBox
@@ -98,16 +95,6 @@ func build_panel() -> Control:
 	_size_z.max_value = 99999
 	size_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
 	_panel.add_child(_make_section("Size", true, size_body))
-
-	var pos_body := VBoxContainer.new()
-	_pos_x = SpinBox.new()
-	_pos_x.max_value = 99999; _pos_x.min_value = -99999
-	_pos_y = SpinBox.new()
-	_pos_y.max_value = 99999; _pos_y.min_value = -99999
-	_pos_z = SpinBox.new()
-	_pos_z.max_value = 99999; _pos_z.min_value = -99999
-	pos_body.add_child(_make_vec3_row("Offset X/Y/Z:", _pos_x, _pos_y, _pos_z))
-	_panel.add_child(_make_section("Position Offset", true, pos_body))
 
 	var tex_body := VBoxContainer.new()
 	tex_body.add_child(_build_texture_row("Albedo:"))
@@ -337,7 +324,6 @@ func _update_ui_from_preset(data: Dictionary) -> void:
 	_size_x.value = data.get("size", Vector3.ONE).x
 	_size_y.value = data.get("size", Vector3.ONE).y
 	_size_z.value = data.get("size", Vector3.ONE).z
-	_pos_x.value = 0.0; _pos_y.value = 0.0; _pos_z.value = 0.0
 
 	_tex_albedo_path.text = data.get("tex", "")
 	_tex_normal_path.text = ""
@@ -362,11 +348,6 @@ func _read_decal_to_ui(decal: Decal) -> void:
 	_size_x.value = decal.size.x
 	_size_y.value = decal.size.y
 	_size_z.value = decal.size.z
-
-	var base_pos: Vector3 = _preset_data.get("pos", Vector3.ZERO) if not (_preset_data is Array) else Vector3.ZERO
-	_pos_x.value = decal.position.x - base_pos.x
-	_pos_y.value = decal.position.y - base_pos.y
-	_pos_z.value = decal.position.z - base_pos.z
 
 	_setting_slider = true
 	_set_spin_slider(_ee_spin, _ee_slider, decal.emission_energy)
