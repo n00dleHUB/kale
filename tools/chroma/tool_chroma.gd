@@ -635,6 +635,7 @@ func _live_update_selection() -> void:
 	var mat := _build_current_material()
 	for n in nodes:
 		_apply_node(n, mat)
+	_save_cache()
 
 
 func _apply_node(n: Node, mat: Material) -> void:
@@ -967,6 +968,19 @@ func on_editor_scene_changed(_root: Node) -> void:
 
 func _clear_cache() -> void:
 	Cache.clear_all()
+	var root := EditorInterface.get_edited_scene_root()
+	if root:
+		var all := root.find_children("*", "Node", true, false)
+		all.append(root)
+		for n in all:
+			if n.has_meta("chroma_applied"):
+				n.remove_meta("chroma_applied")
+				n.remove_meta("chroma_params")
+				n.remove_meta("chroma_color")
+				if n is MeshInstance3D:
+					n.material_override = null
+				elif n is MultiMeshInstance3D:
+					n.material = null
 	_flash_status("Cache cleared", Color(1, 0.7, 0))
 
 
