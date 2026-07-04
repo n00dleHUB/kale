@@ -37,6 +37,10 @@ var _selected_decal: Decal
 var _preset_data = {}
 var _multi_data: Array = []
 
+const DECAL_LAYER_BIT := 1
+var _target_paths: Array[NodePath] = [NodePath("Static")]
+var _target_list: ItemList
+
 
 func get_tool_name() -> String:
 	return "Map Project"
@@ -147,6 +151,34 @@ func build_panel() -> Control:
 	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 
 	_panel.add_child(_make_section("Decal Parameters", true, decal_body))
+
+	# ── Projection Targets (collapsible) ──
+	var tgt_body := VBoxContainer.new()
+
+	var tgt_info := Label.new()
+	tgt_info.text = "Meshes the decal projects onto:"
+	tgt_info.add_theme_font_size_override("font_size", 10)
+	tgt_body.add_child(tgt_info)
+
+	_target_list = ItemList.new()
+	_target_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_target_list.custom_minimum_size = Vector2(0, 80)
+	tgt_body.add_child(_target_list)
+
+	var tgt_btn_row := HBoxContainer.new()
+	var tgt_add := Button.new()
+	tgt_add.text = "Add Selected"
+	tgt_add.pressed.connect(_on_add_target)
+	tgt_btn_row.add_child(tgt_add)
+	var tgt_remove := Button.new()
+	tgt_remove.text = "Remove"
+	tgt_remove.pressed.connect(_on_remove_target)
+	tgt_btn_row.add_child(tgt_remove)
+	tgt_body.add_child(tgt_btn_row)
+
+	_panel.add_child(_make_section("Projection Targets", false, tgt_body))
+
+	_refresh_target_list()
 
 	_on_map_selected(_map_dropdown.selected)
 
@@ -368,6 +400,8 @@ func _on_spawn() -> void:
 	else:
 		_spawn_single_decal(root, map_name, _preset_data, map_name)
 
+	_assign_target_layers(root)
+
 	_find_existing_decals(map_name)
 	if _decal_nodes.size() > 0:
 		_selected_decal = _decal_nodes[0]
@@ -380,6 +414,7 @@ func _spawn_single_decal(root: Node, name: String, data, map_name: String) -> vo
 	var decal := Decal.new()
 	decal.name = "MapProjection_" + name
 	decal.set_meta("map_project", map_name)
+	decal.cull_mask = 1 << DECAL_LAYER_BIT
 
 	var d: Dictionary = data if data is Dictionary else {}
 	decal.position = d.get("pos", Vector3.ZERO)
@@ -409,8 +444,68 @@ func _on_remove() -> void:
 		for child in root.find_children("*", "Decal", true, false):
 			if child.has_meta("map_project"):
 				child.queue_free()
+		_restore_target_layers(root)
 	_decal_nodes = []
 	_selected_decal = null
+
+
+func _refresh_target_list() -> void:
+	_target_list.clear()
+	for p in _target_paths:
+		_target_list.add_item(str(p))
+
+
+func _on_add_target() -> void:
+	var selected := EditorInterface.get_selection().get_selected_nodes()
+	if selected.is_empty():
+		return
+	var node := selected[0]
+	var root := EditorInterface.get_edited_scene_root()
+	if not root or not root.is_ancestor_of(node):
+		return
+	var path := root.get_path_to(node)
+	if path not in _target_paths:
+		_target_paths.append(path)
+		_refresh_target_list()
+
+
+func _on_remove_target() -> void:
+	var sel := _target_list.get_selected_items()
+	if sel.is_empty():
+		return
+	var idx := sel[0]
+	if idx >= 0 and idx < _target_paths.size():
+		_target_paths.remove_at(idx)
+		_refresh_target_list()
+
+
+func _assign_target_layers(root: Node) -> void:
+	var layer_mask := 1 << DECAL_LAYER_BIT
+	for path in _target_paths:
+		var target := root.get_node_or_null(path)
+		if not target:
+			continue
+		for gi in target.find_children("*", "GeometryInstance3D", true, false):
+			var inst := gi as GeometryInstance3D
+			if not inst:
+				continue
+			var orig: int = inst.get_meta("_kale_orig_layers", -1)
+			if orig == -1:
+				inst.set_meta("_kale_orig_layers", inst.layers)
+			inst.layers |= layer_mask
+
+
+func _restore_target_layers(root: Node) -> void:
+	for path in _target_paths:
+		var target := root.get_node_or_null(path)
+		if not target:
+			continue
+		for gi in target.find_children("*", "GeometryInstance3D", true, false):
+			var inst := gi as GeometryInstance3D
+			if not inst or not inst.has_meta("_kale_orig_layers"):
+				continue
+			inst.layers = inst.get_meta("_kale_orig_layers")
+			inst.remove_meta("_kale_orig_layers")
 
 
 func _on_select_in_inspector() -> void:
