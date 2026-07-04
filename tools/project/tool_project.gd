@@ -415,6 +415,8 @@ func _on_remove() -> void:
 
 func _on_select_in_inspector() -> void:
 	if _selected_decal and is_instance_valid(_selected_decal):
+		EditorInterface.get_selection().clear()
+		EditorInterface.get_selection().add_node(_selected_decal)
 		EditorInterface.edit_node(_selected_decal)
 
 

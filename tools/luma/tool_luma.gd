@@ -74,6 +74,11 @@ func build_panel() -> Control:
 	_hdri_list.item_selected.connect(func(_idx): _on_changed())
 	_panel.add_child(_hdri_list)
 
+	var hdr_tip := Label.new()
+	hdr_tip.text = "Get more free HDRIs: https://polyhaven.com/hdris"
+	hdr_tip.font_size = 10
+	_panel.add_child(hdr_tip)
+
 	# Sky section
 	var sky_body := VBoxContainer.new()
 	_sky_enabled = CheckBox.new()
@@ -301,6 +306,7 @@ func build_panel() -> Control:
 			break
 	_preset.select(neutral_idx)
 	_on_preset_changed(neutral_idx)
+	call_deferred("_live_update")
 
 	return _panel
 

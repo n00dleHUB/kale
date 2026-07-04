@@ -359,7 +359,8 @@ func _make_section(title: String, collapsed: bool, body: VBoxContainer) -> VBoxC
 	return section
 
 
-func _build_texture_row() -> HBoxContainer:
+func _build_texture_row() -> VBoxContainer:
+	var col := VBoxContainer.new()
 	var row := HBoxContainer.new()
 	var lbl := Label.new()
 	lbl.text = "Tex:"
@@ -381,7 +382,14 @@ func _build_texture_row() -> HBoxContainer:
 	clear_tex.pressed.connect(_on_clear_texture)
 	row.add_child(clear_tex)
 
-	return row
+	col.add_child(row)
+
+	var tip := Label.new()
+	tip.text = "Get more free textures: https://polyhaven.com/textures"
+	tip.font_size = 10
+	col.add_child(tip)
+
+	return col
 
 
 func _build_texture_list_row() -> HBoxContainer:
