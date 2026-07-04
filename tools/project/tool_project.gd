@@ -17,13 +17,13 @@ var _size_x: SpinBox
 var _size_y: SpinBox
 var _size_z: SpinBox
 
-var _tex_albedo_thumb: TextureRect
+var _tex_albedo_thumb: Button
 var _tex_albedo_path: String
-var _tex_normal_thumb: TextureRect
+var _tex_normal_thumb: Button
 var _tex_normal_path: String
-var _tex_orm_thumb: TextureRect
+var _tex_orm_thumb: Button
 var _tex_orm_path: String
-var _tex_emission_thumb: TextureRect
+var _tex_emission_thumb: Button
 var _tex_emission_path: String
 
 var _ee_spin: SpinBox
