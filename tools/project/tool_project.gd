@@ -191,7 +191,6 @@ func _build_texture_row(label: String, _thumb_var: String, _path_var: String, lo
 
 	var thumb := TextureRect.new()
 	thumb.custom_minimum_size = Vector2(48, 48)
-	thumb.expand_mode = TextureRect.EXPAND_MODE_FIT_WIDTH_PROPORTIONAL
 	thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	thumb.modulate = Color(1, 1, 1, 0.3)
 
