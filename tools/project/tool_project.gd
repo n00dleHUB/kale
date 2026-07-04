@@ -534,7 +534,7 @@ func _read_decal_to_ui(decal: Decal) -> void:
 	_size_y.value = decal.size.y
 	_size_z.value = decal.size.z
 
-	var base_pos := _preset_data.get("pos", Vector3.ZERO) if not (_preset_data is Array) else Vector3.ZERO
+	var base_pos: Vector3 = _preset_data.get("pos", Vector3.ZERO) if not (_preset_data is Array) else Vector3.ZERO
 	_pos_x.value = decal.position.x - base_pos.x
 	_pos_y.value = decal.position.y - base_pos.y
 	_pos_z.value = decal.position.z - base_pos.z
