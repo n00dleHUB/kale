@@ -178,7 +178,7 @@ func build_panel() -> Control:
 	return _panel
 
 
-func _build_texture_row(label: String, path_var: String, load_fn: String, clear_fn: String) -> HBoxContainer:
+func _build_texture_row(label: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	var lbl := Label.new()
 	lbl.text = label
