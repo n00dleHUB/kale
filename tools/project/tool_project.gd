@@ -120,18 +120,19 @@ func build_panel() -> Control:
 	_ee_spin = SpinBox.new()
 	_ee_slider = HSlider.new()
 	param_body.add_child(_make_slider_row("Emission Energy:", _ee_spin, _ee_slider, 0.0, 100.0, 0.01, 0.0))
-	_ee_spin.value_changed.connect(_on_ee_changed)
-	_ee_slider.value_changed.connect(_on_ee_slider)
+	_ee_spin.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
+	_ee_slider.value_changed.connect(_sync_slider.bind(_ee_spin, _ee_slider))
 
 	_am_spin = SpinBox.new()
 	_am_slider = HSlider.new()
 	param_body.add_child(_make_slider_row("Albedo Mix:", _am_spin, _am_slider, 0.0, 1.0, 0.01, 1.0))
-	_am_spin.value_changed.connect(_on_am_changed)
-	_am_slider.value_changed.connect(_on_am_slider)
+	_am_spin.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
+	_am_slider.value_changed.connect(_sync_slider.bind(_am_spin, _am_slider))
 
 	_modulate = ColorPickerButton.new()
 	_modulate.color = Color.WHITE
 	_modulate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_modulate.color_changed.connect(func(_c): _on_param_changed())
 	var mod_row := HBoxContainer.new()
 	var mod_lbl := Label.new()
 	mod_lbl.text = "Modulate:"
@@ -142,22 +143,22 @@ func build_panel() -> Control:
 	_nf_spin = SpinBox.new()
 	_nf_slider = HSlider.new()
 	param_body.add_child(_make_slider_row("Normal Fade:", _nf_spin, _nf_slider, 0.0, 1.0, 0.001, 0.0))
-	_nf_spin.value_changed.connect(_on_nf_changed)
-	_nf_slider.value_changed.connect(_on_nf_slider)
+	_nf_spin.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
+	_nf_slider.value_changed.connect(_sync_slider.bind(_nf_spin, _nf_slider))
 	_panel.add_child(_make_section("Parameters", true, param_body))
 
 	var fade_body := VBoxContainer.new()
 	_uf_spin = SpinBox.new()
 	_uf_slider = HSlider.new()
 	fade_body.add_child(_make_slider_row("Upper Fade:", _uf_spin, _uf_slider, 0.0, 10.0, 0.001, 0.3))
-	_uf_spin.value_changed.connect(_on_uf_changed)
-	_uf_slider.value_changed.connect(_on_uf_slider)
+	_uf_spin.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
+	_uf_slider.value_changed.connect(_sync_slider.bind(_uf_spin, _uf_slider))
 
 	_lf_spin = SpinBox.new()
 	_lf_slider = HSlider.new()
 	fade_body.add_child(_make_slider_row("Lower Fade:", _lf_spin, _lf_slider, 0.0, 10.0, 0.001, 0.3))
-	_lf_spin.value_changed.connect(_on_lf_changed)
-	_lf_slider.value_changed.connect(_on_lf_slider)
+	_lf_spin.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
+	_lf_slider.value_changed.connect(_sync_slider.bind(_lf_spin, _lf_slider))
 	_panel.add_child(_make_section("Vertical Fade", true, fade_body))
 
 	var dist_body := VBoxContainer.new()
@@ -169,13 +170,14 @@ func build_panel() -> Control:
 	_df_begin_spin = SpinBox.new()
 	_df_begin_slider = HSlider.new()
 	dist_body.add_child(_make_slider_row("Begin:", _df_begin_spin, _df_begin_slider, 0.0, 1000.0, 0.1, 10.0))
-	_df_begin_spin.value_changed.connect(_on_df_begin_changed)
-	_df_begin_slider.value_changed.connect(_on_df_begin_slider)
+	_df_begin_spin.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
+	_df_begin_slider.value_changed.connect(_sync_slider.bind(_df_begin_spin, _df_begin_slider))
 
 	_df_len_spin = SpinBox.new()
 	_df_len_slider = HSlider.new()
 	dist_body.add_child(_make_slider_row("Length:", _df_len_spin, _df_len_slider, 0.0, 1000.0, 0.1, 10.0))
-	_df_len_spin.value_changed.connect(_on_df_len_changed)
+	_df_len_spin.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
+	_df_len_slider.value_changed.connect(_sync_slider.bind(_df_len_spin, _df_len_slider))
 	_df_len_slider.value_changed.connect(_on_df_len_slider)
 	_panel.add_child(_make_section("Distance Fade", true, dist_body))
 
@@ -286,114 +288,12 @@ func _set_spin_slider(spin: SpinBox, slider: HSlider, v: float) -> void:
 	slider.value = v
 
 
-func _on_ee_changed(v: float) -> void:
-	if _setting_slider: return
+func _sync_slider(v: float, spin: SpinBox, slider: HSlider) -> void:
+	if _setting_slider:
+		return
 	_setting_slider = true
-	_ee_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_ee_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_ee_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_am_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_am_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_am_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_am_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_nf_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_nf_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_nf_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_nf_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_uf_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_uf_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_uf_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_uf_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_lf_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_lf_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_lf_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_lf_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_df_begin_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_df_begin_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_df_begin_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_df_begin_spin.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_df_len_changed(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_df_len_slider.value = v
-	_setting_slider = false
-	_on_param_changed()
-
-
-func _on_df_len_slider(v: float) -> void:
-	if _setting_slider: return
-	_setting_slider = true
-	_df_len_spin.value = v
+	spin.value = v
+	slider.value = v
 	_setting_slider = false
 	_on_param_changed()
 
