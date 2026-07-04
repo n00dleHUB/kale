@@ -65,7 +65,6 @@ func build_panel() -> Control:
 			_map_dropdown.select(i)
 	_map_dropdown.item_selected.connect(_on_map_selected)
 	_panel.add_child(_map_dropdown)
-	_on_map_selected(_map_dropdown.selected)
 
 	_sub_row = HBoxContainer.new()
 	_sub_dropdown = OptionButton.new()
@@ -74,6 +73,8 @@ func build_panel() -> Control:
 	_sub_row.add_child(_sub_dropdown)
 	_sub_row.visible = false
 	_panel.add_child(_sub_row)
+
+	_on_map_selected(_map_dropdown.selected)
 
 	var btn_row := HBoxContainer.new()
 	_spawn_btn = Button.new()
