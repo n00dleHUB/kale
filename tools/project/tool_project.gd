@@ -93,16 +93,6 @@ func build_panel() -> Control:
 	# ── Decal Parameters (collapsible) ──
 	var decal_body := VBoxContainer.new()
 
-	_size_x = SpinBox.new()
-	_size_x.max_value = 99999
-	_size_y = SpinBox.new()
-	_size_y.max_value = 99999
-	_size_z = SpinBox.new()
-	_size_z.max_value = 99999
-	decal_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
-
-	decal_body.add_child(HSeparator.new())
-
 	_pos_x = SpinBox.new()
 	_pos_x.max_value = 99999
 	_pos_x.min_value = -99999
@@ -113,6 +103,16 @@ func build_panel() -> Control:
 	_pos_z.max_value = 99999
 	_pos_z.min_value = -99999
 	decal_body.add_child(_make_vec3_row("Pos X/Y/Z:", _pos_x, _pos_y, _pos_z))
+
+	decal_body.add_child(HSeparator.new())
+
+	_size_x = SpinBox.new()
+	_size_x.max_value = 99999
+	_size_y = SpinBox.new()
+	_size_y.max_value = 99999
+	_size_z = SpinBox.new()
+	_size_z.max_value = 99999
+	decal_body.add_child(_make_vec3_row("Size X/Y/Z:", _size_x, _size_y, _size_z))
 
 	decal_body.add_child(HSeparator.new())
 
