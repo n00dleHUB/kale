@@ -19,7 +19,7 @@ Collecion of Godot 4.x tools.
 Installation:
 - Clone the repo into the folder "godotporject/addons/".
 - Make sure the folder in addons is named "Kale".
-- If you downloaded a zip file, make sure you unzip it and rename it from "kale-maon" to "Kale".
+- If you downloaded a zip file, make sure you unzip it and rename it from "kale-main" to "Kale".
 - Enable the plugin in Godot>AssetLib>Plugins.
   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
